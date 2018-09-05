@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v7.widget.CardView
+    xmlns:card_view="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/card_view"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    card_view:cardUseCompatPadding="true"
+    card_view:cardCornerRadius="8dp"
+    android:layout_marginBottom="16dp">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <ImageView
+            android:id="@+id/event_image"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:contentDescription="@string/action_settings"
+            android:scaleType="centerCrop"
+            android:adjustViewBounds="true"
+            app:srcCompat="@drawable/ic_place_optimization"/>
+
+
+        <TextView
+            android:id="@+id/event_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="13sp"
+            android:layout_below="@+id/event_image"
+            android:paddingBottom="8dp"
+            android:paddingTop="8dp"
+            android:gravity="center_horizontal"
+            android:fontFamily="@font/quicksand"
+            android:layout_alignParentBottom="true"/>
+
+        <LinearLayout
+            android:layout_width="26dp"
+            android:layout_height="26dp"
+            android:background="@drawable/layout_rd"
+            android:layout_above="@+id/event_name"
+            android:orientation="horizontal"
+            android:layout_alignParentRight="true"
+            android:layout_marginBottom="-13dp"
+            android:adjustViewBounds="true"
+            android:layout_marginRight="4dp"
+            android:layout_gravity="center|center_horizontal">
+            <ImageView
+                android:id="@+id/ImageView_state"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                app:srcCompat="@drawable/ic_outline_check_circle_outline_24px"
+                android:layout_gravity="center|center_horizontal"
+                android:padding="4dp"/>
+        </LinearLayout>
+
+    </RelativeLayout>
+
+</android.support.v7.widget.CardView>

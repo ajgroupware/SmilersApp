@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="activity_horizontal_margin">32dp</dimen>
+
+    <dimen name="text_size_question">48sp</dimen>
+
+    <dimen name="activity_margin_8dp">16dp</dimen>
+
+    <dimen name="activity_margin_16dp">32dp</dimen>
+
+    <dimen name="text_size_button_choice">24sp</dimen>
+
+    <dimen name="text_size_thanks">60sp</dimen>
+
+    <dimen name="text_size_thanks_description">26sp</dimen>
+
+</resources>

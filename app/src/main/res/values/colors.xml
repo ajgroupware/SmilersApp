@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#76bdac</color>
+    <color name="colorPrimaryDark">#192e3c</color>
+    <color name="colorAccent">#e6e6e6</color>
+
+    <color name="white">#ffffff</color>
+
+    <color name="color_background_select_section_view">#192E3C</color>
+
+    <color name="color_white">#FFFFFF</color>
+
+    <color name="color_background_button_choice">#76BDAC</color>
+
+    <color name="black_overlay">#66000000</color>
+
+    <color name="color_thanks">#e6e6e6</color>
+    <color name="color_confirm_header">#56000000</color>
+</resources>

@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "257445608635",
+    "firebase_url": "https://smilers-e92da.firebaseio.com",
+    "project_id": "smilers-e92da",
+    "storage_bucket": "smilers-e92da.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:257445608635:android:5cf0291221a55b53",
+        "android_client_info": {
+          "package_name": "co.smilers"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "257445608635-170r44ftadh4456f8c48s8jf0s8jpnpn.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "co.smilers",
+            "certificate_hash": "1843efdd1f4fca55bb14654069f451c656e86420"
+          }
+        },
+        {
+          "client_id": "257445608635-3r3lgnsu4l8m6bbqgpsr59ts5stalabi.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAy3c-wKV4M4CPqkmqVQrBRFGDSUx2hHLI"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "257445608635-3r3lgnsu4l8m6bbqgpsr59ts5stalabi.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/navigation_headquarter"
+        android:icon="@drawable/ic_outline_home_24px"
+        android:title="@string/title_headquarter" />
+
+    <item
+        android:id="@+id/navigation_zone"
+        android:icon="@drawable/ic_outline_beenhere_24px"
+        android:title="@string/title_zone" />
+
+    <item
+        android:id="@+id/navigation_campaign"
+        android:icon="@drawable/ic_outline_sentiment_satisfied_24px"
+        android:title="@string/title_campaign" />
+
+</menu>

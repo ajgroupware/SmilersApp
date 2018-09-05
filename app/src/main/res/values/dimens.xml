@@ -1,0 +1,20 @@
+<resources>
+    <!-- Default screen margins, per the Android Design guidelines. -->
+    <dimen name="activity_horizontal_margin">16dp</dimen>
+
+    <dimen name="activity_vertical_margin">16dp</dimen>
+
+    <dimen name="text_size_question">24sp</dimen>
+
+    <dimen name="activity_margin_8dp">8dp</dimen>
+
+    <dimen name="activity_margin_16dp">16dp</dimen>
+
+    <dimen name="text_size_button_choice">18sp</dimen>
+
+    <dimen name="text_size_thanks">26sp</dimen>
+
+    <dimen name="text_size_thanks_description">16sp</dimen>
+
+    <dimen name="text_size_thanks_url">10sp</dimen>
+</resources>
