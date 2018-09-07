@@ -22,10 +22,11 @@
             tools:context=".ui.QuestionFragment">
 
             <ImageView
+                android:id="@+id/ImageView_general_logo"
                 android:layout_width="152dp"
                 android:layout_height="57dp"
                 android:maxHeight="50dp"
-                android:src="@drawable/ic_logo_exito"
+                android:src="@drawable/ic_logo_smilers"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />

@@ -31,6 +31,8 @@ public class SmsCellPhone {
   private Long headquarterCode = null;
   @SerializedName("zoneCode")
   private Long zoneCode = null;
+  @SerializedName("email")
+  private String email = null;
   @SerializedName("isActive")
   private Boolean isActive = null;
 
@@ -78,14 +80,25 @@ public class SmsCellPhone {
   }
 
   /**
-   * 
+   * Zona asociada
    **/
-  @ApiModelProperty(value = "")
+  @ApiModelProperty(value = "Zona asociada")
   public Long getZoneCode() {
     return zoneCode;
   }
   public void setZoneCode(Long zoneCode) {
     this.zoneCode = zoneCode;
+  }
+
+  /**
+   * Correo electrónico al que se envia mensaje
+   **/
+  @ApiModelProperty(value = "Correo electrónico al que se envia mensaje")
+  public String getEmail() {
+    return email;
+  }
+  public void setEmail(String email) {
+    this.email = email;
   }
 
   /**
@@ -114,6 +127,7 @@ public class SmsCellPhone {
         (this.campaignCode == null ? smsCellPhone.campaignCode == null : this.campaignCode.equals(smsCellPhone.campaignCode)) &&
         (this.headquarterCode == null ? smsCellPhone.headquarterCode == null : this.headquarterCode.equals(smsCellPhone.headquarterCode)) &&
         (this.zoneCode == null ? smsCellPhone.zoneCode == null : this.zoneCode.equals(smsCellPhone.zoneCode)) &&
+        (this.email == null ? smsCellPhone.email == null : this.email.equals(smsCellPhone.email)) &&
         (this.isActive == null ? smsCellPhone.isActive == null : this.isActive.equals(smsCellPhone.isActive));
   }
 
@@ -125,6 +139,7 @@ public class SmsCellPhone {
     result = 31 * result + (this.campaignCode == null ? 0: this.campaignCode.hashCode());
     result = 31 * result + (this.headquarterCode == null ? 0: this.headquarterCode.hashCode());
     result = 31 * result + (this.zoneCode == null ? 0: this.zoneCode.hashCode());
+    result = 31 * result + (this.email == null ? 0: this.email.hashCode());
     result = 31 * result + (this.isActive == null ? 0: this.isActive.hashCode());
     return result;
   }
@@ -139,6 +154,7 @@ public class SmsCellPhone {
     sb.append("  campaignCode: ").append(campaignCode).append("\n");
     sb.append("  headquarterCode: ").append(headquarterCode).append("\n");
     sb.append("  zoneCode: ").append(zoneCode).append("\n");
+    sb.append("  email: ").append(email).append("\n");
     sb.append("  isActive: ").append(isActive).append("\n");
     sb.append("}\n");
     return sb.toString();

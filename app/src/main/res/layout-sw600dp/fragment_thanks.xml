@@ -18,19 +18,20 @@
             tools:context=".fragments.QuestionFragment">
 
             <ImageView
-                android:layout_width="152dp"
-                android:layout_height="57dp"
-                android:maxHeight="50dp"
-                android:src="@drawable/ic_logo_exito"
+                android:id="@+id/ImageView_general_logo"
+                android:layout_width="220dp"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_logo_smilers"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintTop_toTopOf="parent"
+                android:adjustViewBounds="true"/>
 
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="56dp"
+                android:layout_marginTop="136dp"
                 android:gravity="center_vertical|center_horizontal"
                 android:orientation="horizontal"
 
@@ -75,7 +76,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical|center_horizontal|center"
-                android:layout_marginBottom="68dp"
+                android:layout_marginBottom="88dp"
                 android:gravity="center_vertical|center_horizontal"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"

@@ -10,7 +10,7 @@ public class AppDataHelper extends SQLiteOpenHelper {
 
     private final static String TAG = AppDataHelper.class.getSimpleName();
     // If you change the database schema, you must increment the database version.
-    public static final int DATABASE_VERSION = 1;
+    public static final int DATABASE_VERSION = 2;
     public static final String DATABASE_NAME = "Smilers.db";
 
     public AppDataHelper(Context context) {
@@ -142,6 +142,7 @@ public class AppDataHelper extends SQLiteOpenHelper {
                 "(" +
                 "    id integer NOT NULL," +
                 "    cell_phone_number varchar," +
+                "    email varchar," +
                 "    headquarter_code integer," +
                 "    zone_code integer," +
                 "    campaign_code integer," +
@@ -152,10 +153,9 @@ public class AppDataHelper extends SQLiteOpenHelper {
 
         db.execSQL("CREATE TABLE general_image" +
                 "(" +
-                "    id integer NOT NULL," +
-                "    image BLOB," +
                 "    account_code varchar NOT NULL," +
-                "    PRIMARY KEY (id, account_code)" +
+                "    image BLOB," +
+                "    PRIMARY KEY (account_code)" +
                 ");");
 
         db.execSQL("CREATE TABLE country" +
@@ -185,6 +185,14 @@ public class AppDataHelper extends SQLiteOpenHelper {
                 "    PRIMARY KEY (id)" +
                 ");");
 
+        db.execSQL("CREATE TABLE general_setting_parameter " +
+                "(" +
+                " parameter_key varchar NOT NULL" +
+                "  , parameter_value varchar" +
+                "  , account_code varchar NOT NULL" +
+                "  , PRIMARY KEY (parameter_key, account_code)" +
+                ");");
+
         db.execSQL("CREATE TABLE current_config" +
                 "(" +
                 "    id integer NOT NULL," +
@@ -208,7 +216,34 @@ public class AppDataHelper extends SQLiteOpenHelper {
         Log.w(TAG, "--Upgrading database from version " + oldVersion + " to " + newVersion + ", which will destroy all old data");
         // This database is only a cache for online data, so its upgrade policy is
         // to simply to discard the data and start over
+        switch (oldVersion) {
+            case 1:
+                //Se agrega nueva estructura o datos
+                if (newVersion == 2) {
+                    Log.i(TAG, "--Upgrade structure DB to version 2");
 
+                    db.execSQL("DROP TABLE general_image;");
+                    db.execSQL("CREATE TABLE general_image" +
+                            "(" +
+                            "    account_code varchar NOT NULL," +
+                            "    image BLOB," +
+                            "    PRIMARY KEY (account_code)" +
+                            ");");
+
+                    //Se agrega tabla de parámetros generales
+                    db.execSQL("CREATE TABLE general_setting_parameter " +
+                            "(" +
+                            " parameter_key varchar NOT NULL" +
+                            "  , parameter_value varchar" +
+                            "  , account_code varchar NOT NULL" +
+                            "  , PRIMARY KEY (parameter_key, account_code)" +
+                            ");");
+
+                    db.execSQL("ALTER TABLE sms_cell_phone ADD COLUMN email varchar;");
+
+                }
+                break;
+        }
 
     }
 }

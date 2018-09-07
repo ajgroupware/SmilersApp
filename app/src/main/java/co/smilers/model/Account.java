@@ -24,6 +24,8 @@ public class Account {
   private String code = null;
   @SerializedName("name")
   private String name = null;
+  @SerializedName("activedUsers")
+  private Integer activedUsers = null;
 
   /**
    * Identificador único de la cuenta
@@ -58,6 +60,17 @@ public class Account {
     this.name = name;
   }
 
+  /**
+   * Usuarios permitidos
+   **/
+  @ApiModelProperty(value = "Usuarios permitidos")
+  public Integer getActivedUsers() {
+    return activedUsers;
+  }
+  public void setActivedUsers(Integer activedUsers) {
+    this.activedUsers = activedUsers;
+  }
+
 
   @Override
   public boolean equals(Object o) {
@@ -70,7 +83,8 @@ public class Account {
     Account account = (Account) o;
     return (this.id == null ? account.id == null : this.id.equals(account.id)) &&
         (this.code == null ? account.code == null : this.code.equals(account.code)) &&
-        (this.name == null ? account.name == null : this.name.equals(account.name));
+        (this.name == null ? account.name == null : this.name.equals(account.name)) &&
+        (this.activedUsers == null ? account.activedUsers == null : this.activedUsers.equals(account.activedUsers));
   }
 
   @Override
@@ -79,6 +93,7 @@ public class Account {
     result = 31 * result + (this.id == null ? 0: this.id.hashCode());
     result = 31 * result + (this.code == null ? 0: this.code.hashCode());
     result = 31 * result + (this.name == null ? 0: this.name.hashCode());
+    result = 31 * result + (this.activedUsers == null ? 0: this.activedUsers.hashCode());
     return result;
   }
 
@@ -90,6 +105,7 @@ public class Account {
     sb.append("  id: ").append(id).append("\n");
     sb.append("  code: ").append(code).append("\n");
     sb.append("  name: ").append(name).append("\n");
+    sb.append("  activedUsers: ").append(activedUsers).append("\n");
     sb.append("}\n");
     return sb.toString();
   }

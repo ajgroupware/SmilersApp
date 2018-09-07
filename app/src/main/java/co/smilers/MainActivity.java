@@ -14,11 +14,21 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.google.firebase.messaging.FirebaseMessaging;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+import co.smilers.api.AccountApi;
 import co.smilers.fragments.CampaignFragment;
 import co.smilers.fragments.HeadquarterFragment;
 import co.smilers.fragments.ZoneFragment;
 import co.smilers.model.Account;
 import co.smilers.model.Headquarter;
+import co.smilers.model.Logout;
+import co.smilers.model.MeterDevice;
 import co.smilers.model.User;
 import co.smilers.model.data.daos.UserDAO;
 import co.smilers.services.PeriodicalSyncService;
@@ -64,6 +74,8 @@ public class MainActivity extends AppCompatActivity {
         HeadquarterFragment headquarterFragment = HeadquarterFragment.newInstance("", "");
         getSupportFragmentManager().beginTransaction().replace(R.id.fragmentContainer, headquarterFragment).commit();
 
+
+        registerDevice();
         syncAll ();
 
         startService(new Intent(this, PeriodicalSyncService.class));
@@ -150,6 +162,26 @@ public class MainActivity extends AppCompatActivity {
 
             }
         }));
+
+        final ProgressDialog progressGeneralLogo = ProgressDialog.show(this, null, "Sincronizando campañas...", false);
+        startService(createCallingIntent(loginUser.getAccount().getCode(), SyncIntentService.ACTION_SYNC_GENERAL_LOGO,  new SyncIntentServiceReceiver.Listener() {
+            @Override
+            public void onReceiveResult(int resultCode, Bundle resultData) {
+                Log.d(TAG, "--onReceiveResult GeneralLogo");
+                progressGeneralLogo.dismiss();
+
+            }
+        }));
+
+        final ProgressDialog progressGeneralSettingParameter = ProgressDialog.show(this, null, "Sincronizando campañas...", false);
+        startService(createCallingIntent(loginUser.getAccount().getCode(), SyncIntentService.ACTION_SYNC_GENERAL_SETTING_PARAMETER,  new SyncIntentServiceReceiver.Listener() {
+            @Override
+            public void onReceiveResult(int resultCode, Bundle resultData) {
+                Log.d(TAG, "--onReceiveResult GeneralSettingParameter");
+                progressGeneralSettingParameter.dismiss();
+
+            }
+        }));
     }
 
     private Intent createCallingIntent(String account, String action, SyncIntentServiceReceiver.Listener listener) {
@@ -188,8 +220,33 @@ public class MainActivity extends AppCompatActivity {
                     public boolean onMenuItemClick(MenuItem item){
                         Log.d(TAG, "--logout " );
                         UserDAO userDAO = new UserDAO(MainActivity.this);
-                        userDAO.logout();
-                        goLaunchScreen();
+                        try {
+                            User loginUser = userDAO.getUserLogin();
+                            MeterDevice device = userDAO.getDevice();
+                            AccountApi accountApi = new AccountApi();
+                            Logout logout = new Logout();
+                            logout.setIdPush(device.getDeviceIdPush());
+                            logout.setUserName(loginUser.getUserName());
+                            accountApi.logout(logout, MainActivity.this, new Response.Listener<String>() {
+                                @Override
+                                public void onResponse(String response) {
+                                    Log.d(TAG, "--onResponse " + response);
+                                }
+
+                            }, new Response.ErrorListener() {
+                                @Override
+                                public void onErrorResponse(VolleyError error) {
+                                    Log.e(TAG, "--onErrorResponse " + error.getMessage());
+                                }
+                            });
+
+                            userDAO.logout();
+                            goLaunchScreen();
+                        } catch (Exception e) {
+                            Log.e(TAG, "--Error " + e.getMessage());
+                            userDAO.logout();
+                            goLaunchScreen();
+                        }
 
                         return true;
                     }
@@ -216,6 +273,37 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
             Log.e(TAG,"--Error goLoginScreen");
         }
+    }
+
+    private void registerDevice() {
+        try {
+            UserDAO userDAO = new UserDAO(this);
+            User user = userDAO.getUserLogin();
+            MeterDevice meterDevice = userDAO.getDevice();
+            meterDevice.setName(user.getUserName() + "_" + new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss").format(new Date()));
+            meterDevice.setCurrentUser(user.getUserName());
+
+            AccountApi accountApi = new AccountApi();
+            accountApi.registerMeterDevice(user.getAccount().getCode(), meterDevice, this, new Response.Listener<String>() {
+                @Override
+                public void onResponse(String response) {
+                    Log.d(TAG,"--registerMeterDevice response: " + response);
+                }
+            }, new Response.ErrorListener() {
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    Log.e(TAG,"--registerMeterDevice Error: " + error.getMessage());
+                }
+            });
+
+            //Suscribir la aplicación al FCM topic
+            FirebaseMessaging.getInstance().subscribeToTopic("smilersConfig");
+            FirebaseMessaging.getInstance().subscribeToTopic(user.getAccount().getCode());
+            Log.d(TAG, "--Suscribe to Topic");
+        } catch (Exception e) {
+            Log.e(TAG,"--Error: " + e.getMessage());
+        }
+
     }
 
 }

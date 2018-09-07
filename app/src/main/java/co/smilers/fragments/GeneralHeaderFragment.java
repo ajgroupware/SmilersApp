@@ -1,6 +1,8 @@
 package co.smilers.fragments;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
@@ -11,6 +13,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.util.List;
@@ -73,7 +76,9 @@ public class GeneralHeaderFragment extends Fragment {
     }
 
     private TextView textviewDescription;
-    ConstraintLayout constraintQuestion = null;
+    private ConstraintLayout constraintQuestion = null;
+    private ImageView imageViewGeneralLogo;
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -84,13 +89,18 @@ public class GeneralHeaderFragment extends Fragment {
         nextButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                ((StartZoneActivity) getActivity()).navigationController.navigateToHeaderQuestion(headquarter, zone);
+                showHeaderQuestion();
             }
         });
 
         textviewDescription = (TextView) view.findViewById(R.id.textview_description);
+        imageViewGeneralLogo = (ImageView) view.findViewById(R.id.ImageView_general_logo);
 
         return view;
+    }
+
+    public void showHeaderQuestion() {
+        ((StartZoneActivity) getActivity()).navigationController.navigateToHeaderQuestion(headquarter, zone);
     }
 
     @Override
@@ -105,9 +115,23 @@ public class GeneralHeaderFragment extends Fragment {
             CampaignDAO campaignDAO = new CampaignDAO(getActivity());
             UserDAO userDAO = new UserDAO(getActivity());
             User loginUser = userDAO.getUserLogin();
+
+            //Cargar logo
+            ParameterDAO parameterDAO = new ParameterDAO(getActivity());
+            try {
+                byte[] imageData = parameterDAO.getGeneralLogo(loginUser.getAccount().getCode());
+                if (imageData != null && imageData.length > 0) {
+                    Log.d(TAG, "--imageData " + imageData.length);
+                    Bitmap bitmap = BitmapFactory.decodeByteArray(imageData, 0, imageData.length);
+                    imageViewGeneralLogo.setImageBitmap(bitmap);
+                }
+            } catch (Exception e) {
+                Log.e(TAG, "--Error:  " + e.getMessage());
+            }
+
             List<GeneralHeader> generalHeaders = campaignDAO.getGeneralHeader(loginUser.getAccount().getCode());
             if (generalHeaders != null && generalHeaders.size() > 0) {
-                ParameterDAO parameterDAO = new ParameterDAO(getActivity());
+
                 Headquarter headquarter_ = parameterDAO.getHeadquarterByCode(loginUser.getAccount().getCode(), headquarter);
                 GeneralHeader generalHeader = generalHeaders.get(0);
 
@@ -118,9 +142,13 @@ public class GeneralHeaderFragment extends Fragment {
                     constraintQuestion.setBackgroundColor(Color.parseColor(generalHeader.getDesignColor()));
                 }
 
+            } else {
+                // No hay encabezado que mostrar
+                showHeaderQuestion();
             }
+
         } catch (Exception e) {
-            Log.e(TAG, e.getMessage());
+            Log.e(TAG, "--Error: " + e.getMessage());
         }
 
     }

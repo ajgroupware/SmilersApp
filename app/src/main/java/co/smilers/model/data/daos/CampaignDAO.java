@@ -7,7 +7,9 @@ import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import co.smilers.model.AnswerScore;
@@ -101,8 +103,13 @@ public class CampaignDAO {
                     ,"account_code"
             };
 
+            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            Date currentDate = new Date();
+            String currentDateStr = simpleDateFormat.format(currentDate);
+            Log.d(TAG, "--currentDateStr: "+currentDateStr);
             // Define 'where' part of query.
-            String selection = "account_code = ?";
+            //String selection = "account_code = ? and start_date <= '" + currentDateStr + "' and end_date >= '" + currentDateStr + "' and is_published = 1"; //Dejar para próxima versión
+            String selection = "account_code = ? and start_date <= '" + currentDateStr + "' and end_date >= '" + currentDateStr + "'";
             // Specify arguments in placeholder order.
             String[] selectionArgs = {accountCode};
             String sortOrder = null;

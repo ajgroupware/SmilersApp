@@ -2,6 +2,8 @@ package co.smilers.fragments;
 
 
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.media.MediaPlayer;
 import android.os.Bundle;
@@ -25,6 +27,7 @@ import co.smilers.model.AnswerScore;
 import co.smilers.model.SmsCellPhone;
 import co.smilers.model.User;
 import co.smilers.model.Zone;
+import co.smilers.model.data.daos.CampaignDAO;
 import co.smilers.model.data.daos.ParameterDAO;
 import co.smilers.model.data.daos.UserDAO;
 import co.smilers.services.SyncIntentService;
@@ -32,6 +35,7 @@ import co.smilers.services.SyncIntentServiceReceiver;
 import co.smilers.ui.DialogAssitanceFragment;
 import co.smilers.ui.DialogSuccessAssitanceFragment;
 import co.smilers.utils.ConstantsUtil;
+import co.smilers.utils.SendEmailUtil;
 import co.smilers.utils.SmsUtil;
 
 /**
@@ -109,84 +113,91 @@ public class QuestionFragment extends Fragment {
         }, ConstantsUtil.WAIT_TIME_ANSWER);
     }
 
+    private ImageView imageViewGeneralLogo;
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
+
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_question, container, false);
-        TextView textviewQuestionNumber = view.findViewById(R.id.textview_question_number);
-        TextView textviewQuestionCount = view.findViewById(R.id.textview_question_count);
-        TextView textviewDescription = view.findViewById(R.id.textview_description);
-        AnswerScore answerScore = StartZoneActivity.answerScores.get(actualQuestion.intValue());
-        answerScore.setCityCode(answerScore.getHeadquarter().getCity() != null ? answerScore.getHeadquarter().getCity().getCode() : null);
-        ConstraintLayout constraintQuestion = view.findViewById(R.id.constraint_question);
-
-        int index = actualQuestion.intValue() + 1;
-        textviewQuestionNumber.setText("" + index);
-        textviewQuestionCount.setText("" + sizeQuestion.intValue());
-        textviewDescription.setText(answerScore.getQuestionItem().getTitle());
-        constraintQuestion.setBackgroundColor(Color.parseColor(answerScore.getQuestionItem().getDesignColor()));
+        imageViewGeneralLogo = (ImageView) view.findViewById(R.id.ImageView_general_logo);
+        //Verificar si hay preguntas cargadas
+        if (StartZoneActivity.answerScores != null && StartZoneActivity.answerScores.size() > 0) {
+            TextView textviewQuestionNumber = view.findViewById(R.id.textview_question_number);
+            TextView textviewQuestionCount  = view.findViewById(R.id.textview_question_count);
+            TextView textviewDescription    = view.findViewById(R.id.textview_description);
 
 
-        ImageView excellent = view.findViewById(R.id.imageview_excellent);
-        ImageView good = view.findViewById(R.id.imageview_good);
-        ImageView regular = view.findViewById(R.id.imageview_regular);
-        ImageView bad = view.findViewById(R.id.imageview_bad);
-        ImageView appalling = view.findViewById(R.id.imageview_appalling);
+            AnswerScore answerScore = StartZoneActivity.answerScores.get(actualQuestion.intValue());
+            answerScore.setCityCode(answerScore.getHeadquarter().getCity() != null ? answerScore.getHeadquarter().getCity().getCode() : null);
+            ConstraintLayout constraintQuestion = view.findViewById(R.id.constraint_question);
 
-        excellent.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                answerScore.setExcellent(1);
-                answerScore.setScore(5);
-                if (sizeQuestion.intValue() == actualQuestion.intValue() + 1) {
-                    sendAnswer();
-                    if (StartZoneActivity.showAlert) {
-                        showAlertAssistance();
+            int index = actualQuestion.intValue() + 1;
+            textviewQuestionNumber.setText("" + index);
+            textviewQuestionCount.setText("" + sizeQuestion.intValue());
+            textviewDescription.setText(answerScore.getQuestionItem().getTitle());
+            constraintQuestion.setBackgroundColor(Color.parseColor(answerScore.getQuestionItem().getDesignColor()));
+
+
+            ImageView excellent = view.findViewById(R.id.imageview_excellent);
+            ImageView good = view.findViewById(R.id.imageview_good);
+            ImageView regular = view.findViewById(R.id.imageview_regular);
+            ImageView bad = view.findViewById(R.id.imageview_bad);
+            ImageView appalling = view.findViewById(R.id.imageview_appalling);
+
+            excellent.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    answerScore.setExcellent(1);
+                    answerScore.setScore(5);
+                    if (sizeQuestion.intValue() == actualQuestion.intValue() + 1) {
+                        sendAnswer();
+                        if (StartZoneActivity.showAlert) {
+                            showAlertAssistance();
+                        } else {
+                            showThanks();
+                        }
                     } else {
-                        showThanks();
+                        showNext();
                     }
-                } else {
-                    showNext();
                 }
-            }
-        });
+            });
 
-        good.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                answerScore.setGood(1);
-                answerScore.setScore(4);
-                if (sizeQuestion.intValue() == actualQuestion.intValue() + 1) {
-                    sendAnswer();
-                    if (StartZoneActivity.showAlert) {
-                        showAlertAssistance();
+            good.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    answerScore.setGood(1);
+                    answerScore.setScore(4);
+                    if (sizeQuestion.intValue() == actualQuestion.intValue() + 1) {
+                        sendAnswer();
+                        if (StartZoneActivity.showAlert) {
+                            showAlertAssistance();
+                        } else {
+                            showThanks();
+                        }
                     } else {
-                        showThanks();
+                        showNext();
                     }
-                } else {
-                    showNext();
                 }
-            }
-        });
+            });
 
-        regular.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                StartZoneActivity.showAlert = true;
-                answerScore.setModerate(1);
-                answerScore.setScore(3);
-                if (sizeQuestion.intValue() == actualQuestion.intValue() + 1) {
-                    sendAnswer();
-                    if (StartZoneActivity.showAlert) {
-                        showAlertAssistance();
+            regular.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    StartZoneActivity.showAlert = true;
+                    answerScore.setModerate(1);
+                    answerScore.setScore(3);
+                    if (sizeQuestion.intValue() == actualQuestion.intValue() + 1) {
+                        sendAnswer();
+                        if (StartZoneActivity.showAlert) {
+                            showAlertAssistance();
+                        } else {
+                            showThanks();
+                        }
                     } else {
-                        showThanks();
-                    }
-                } else {
-                    showNext();
-                    //Se muestra mensaje al final
+                        showNext();
+                        //Se muestra mensaje al final
                     /*
                     if (StartZoneActivity.showAlert) {
                         showNext();
@@ -195,26 +206,26 @@ public class QuestionFragment extends Fragment {
                         showAlertAssistance();
                     }
                     */
-                }
-            }
-        });
-
-        bad.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                StartZoneActivity.showAlert = true;
-                answerScore.setBad(1);
-                answerScore.setScore(2);
-                if (sizeQuestion.intValue() == actualQuestion.intValue() + 1) {
-                    sendAnswer();
-                    if (StartZoneActivity.showAlert) {
-                        showAlertAssistance();
-                    } else {
-                        showThanks();
                     }
-                } else {
-                    showNext();
-                    //Se muestra mensaje al final
+                }
+            });
+
+            bad.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    StartZoneActivity.showAlert = true;
+                    answerScore.setBad(1);
+                    answerScore.setScore(2);
+                    if (sizeQuestion.intValue() == actualQuestion.intValue() + 1) {
+                        sendAnswer();
+                        if (StartZoneActivity.showAlert) {
+                            showAlertAssistance();
+                        } else {
+                            showThanks();
+                        }
+                    } else {
+                        showNext();
+                        //Se muestra mensaje al final
                     /*
                     if (StartZoneActivity.showAlert) {
                         showNext();
@@ -223,26 +234,26 @@ public class QuestionFragment extends Fragment {
                         showAlertAssistance();
                     }
                     */
-                }
-            }
-        });
-
-        appalling.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                StartZoneActivity.showAlert = true;
-                answerScore.setPoor(1);
-                answerScore.setScore(1);
-                if (sizeQuestion.intValue() == actualQuestion.intValue() + 1) {
-                    sendAnswer();
-                    if (StartZoneActivity.showAlert) {
-                        showAlertAssistance();
-                    } else {
-                        showThanks();
                     }
-                } else {
-                    showNext();
-                    //Se muestra mensaje al final
+                }
+            });
+
+            appalling.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    StartZoneActivity.showAlert = true;
+                    answerScore.setPoor(1);
+                    answerScore.setScore(1);
+                    if (sizeQuestion.intValue() == actualQuestion.intValue() + 1) {
+                        sendAnswer();
+                        if (StartZoneActivity.showAlert) {
+                            showAlertAssistance();
+                        } else {
+                            showThanks();
+                        }
+                    } else {
+                        showNext();
+                        //Se muestra mensaje al final
                     /*
                     if (StartZoneActivity.showAlert) {
                         showNext();
@@ -251,10 +262,15 @@ public class QuestionFragment extends Fragment {
                         showAlertAssistance();
                     }
                     */
-                }
+                    }
 
-            }
-        });
+                }
+            });
+        } else {
+            //Navegar a la portada
+            showHeader();
+
+        }
 
         return view;
     }
@@ -269,6 +285,10 @@ public class QuestionFragment extends Fragment {
 
     public void showThanks() {
         ((StartZoneActivity) getActivity()).navigationController.navigateToThanks(headquarter, zone);
+    }
+
+    public void showHeader() {
+        ((StartZoneActivity) getActivity()).navigationController.navigateToHeader(headquarter, zone);
     }
 
     private void sendAnswer() {
@@ -301,20 +321,33 @@ public class QuestionFragment extends Fragment {
     }
 
     public void showAlertAssistance() {
-        ((StartZoneActivity)getActivity()).delayedHide(0);
-        DialogAssitanceFragment dialogFragment = DialogAssitanceFragment.newInstance(new DialogAssitanceFragment.OnButtonClickDialogListener() {
-            @Override
-            public void onAcceptClick(DialogAssitanceFragment dialogFragment) {
-                sendSms();
-                showAlertSuccessAssistance();
-            }
+        ParameterDAO parameterDAO = new ParameterDAO(getActivity());
+        UserDAO userDAO = new UserDAO(getActivity());
+        User loginUser = userDAO.getUserLogin();
 
-            @Override
-            public void onCancelClick(DialogAssitanceFragment dialogFragment) {
-                showThanks();
-            }
-        });
-        dialogFragment.show(getFragmentManager(), DialogAssitanceFragment.TAG);
+        String sendSms = parameterDAO.getGeneralSettingParameterValue(loginUser.getAccount().getCode(), "SEND_SMS");
+        String sendEmail = parameterDAO.getGeneralSettingParameterValue(loginUser.getAccount().getCode(), "SEND_EMAIL");
+        //Verificar si la cuenta genera alerta
+        if ("true".equals(sendSms) || "true".equals(sendEmail)) {
+            ((StartZoneActivity)getActivity()).delayedHide(0);
+            DialogAssitanceFragment dialogFragment = DialogAssitanceFragment.newInstance(new DialogAssitanceFragment.OnButtonClickDialogListener() {
+                @Override
+                public void onAcceptClick(DialogAssitanceFragment dialogFragment) {
+                    sendAlert();
+                    showAlertSuccessAssistance();
+                }
+
+                @Override
+                public void onCancelClick(DialogAssitanceFragment dialogFragment) {
+                    showThanks();
+                }
+            });
+            dialogFragment.show(getFragmentManager(), DialogAssitanceFragment.TAG);
+        } else {
+            sendAlert();
+            showThanks();
+        }
+
     }
 
     public void showAlertSuccessAssistance() {
@@ -340,7 +373,7 @@ public class QuestionFragment extends Fragment {
                     dialogFragment.closeDialog();
                     showThanks();
                 } catch (Exception e) {
-                    Log.e(TAG, e.getMessage());
+                    Log.e(TAG, "--Error: " + e.getMessage());
                 }
 
 
@@ -350,44 +383,86 @@ public class QuestionFragment extends Fragment {
     }
 
 
-    private void sendSms() {
+    private void sendAlert() {
         ParameterDAO parameterDAO = new ParameterDAO(getActivity());
         UserDAO userDAO = new UserDAO(getActivity());
         User loginUser = userDAO.getUserLogin();
-        List<SmsCellPhone> smsCellPhones = parameterDAO.getSmsCellPhone(loginUser.getAccount().getCode(), headquarter);
-        if (smsCellPhones != null) {
-            List<SmsCellPhone> smsCellPhonesZones = new ArrayList<>();
-            List<SmsCellPhone> smsCellPhonesCampaign = new ArrayList<>();
-            List<SmsCellPhone> smsCellPhonesHeadquarter = new ArrayList<>();
-            for (SmsCellPhone smsCellPhone: smsCellPhones) {
-                if (smsCellPhone.getCampaignCode() != null && smsCellPhone.getCampaignCode().intValue() > 0 && smsCellPhone.getCampaignCode().intValue() == campaign.intValue()) {
-                    smsCellPhonesCampaign.add(smsCellPhone);
-                } else if (smsCellPhone.getZoneCode() != null && smsCellPhone.getZoneCode().intValue() > 0 && smsCellPhone.getZoneCode().intValue() == zone.intValue()) {
-                    smsCellPhonesCampaign.add(smsCellPhone);
-                } else {
-                    smsCellPhonesHeadquarter.add(smsCellPhone);
+
+        String sendSms = parameterDAO.getGeneralSettingParameterValue(loginUser.getAccount().getCode(), "SEND_SMS");
+        String sendEmail = parameterDAO.getGeneralSettingParameterValue(loginUser.getAccount().getCode(), "SEND_EMAIL");
+
+        if ("true".equals(sendSms) && "true".equals(sendEmail)) {
+            Log.d(TAG, "--send Alert! ");
+            List<SmsCellPhone> smsCellPhones = parameterDAO.getSmsCellPhone(loginUser.getAccount().getCode(), headquarter);
+            if (smsCellPhones != null) {
+                List<SmsCellPhone> smsCellPhonesZones = new ArrayList<>();
+                List<SmsCellPhone> smsCellPhonesCampaign = new ArrayList<>();
+                List<SmsCellPhone> smsCellPhonesHeadquarter = new ArrayList<>();
+                for (SmsCellPhone smsCellPhone: smsCellPhones) {
+                    if (smsCellPhone.getCampaignCode() != null && smsCellPhone.getCampaignCode().intValue() > 0 && smsCellPhone.getCampaignCode().intValue() == campaign.intValue()) {
+                        smsCellPhonesCampaign.add(smsCellPhone);
+                    } else if (smsCellPhone.getZoneCode() != null && smsCellPhone.getZoneCode().intValue() > 0 && smsCellPhone.getZoneCode().intValue() == zone.intValue()) {
+                        smsCellPhonesCampaign.add(smsCellPhone);
+                    } else {
+                        smsCellPhonesHeadquarter.add(smsCellPhone);
+                    }
                 }
+
+                Zone zone_ = parameterDAO.getZoneByCode(loginUser.getAccount().getCode(), zone);
+                if (smsCellPhonesCampaign.size() > 0) {
+                    sendAlert(smsCellPhonesCampaign, zone_, sendSms, sendEmail);
+                } else if (smsCellPhonesZones.size() > 0) {
+                    sendAlert(smsCellPhonesZones, zone_, sendSms, sendEmail);
+                } else {
+                    sendAlert(smsCellPhonesHeadquarter, zone_, sendSms, sendEmail);
+                }
+
             }
 
-            Zone zone_ = parameterDAO.getZoneByCode(loginUser.getAccount().getCode(), zone);
-            if (smsCellPhonesCampaign.size() > 0) {
-                sendSms(smsCellPhonesCampaign, zone_);
-            } else if (smsCellPhonesZones.size() > 0) {
-                sendSms(smsCellPhonesZones, zone_);
-            } else {
-                sendSms(smsCellPhonesHeadquarter, zone_);
-            }
-
+            //Toast.makeText(getActivity(), "En unos momentos estaremos contigo, gracias", Toast.LENGTH_LONG).show();
         }
-
-        //Toast.makeText(getActivity(), "En unos momentos estaremos contigo, gracias", Toast.LENGTH_LONG).show();
     }
 
-    private void sendSms(List<SmsCellPhone> smsCellPhones, Zone zone) {
+    private void sendAlert(List<SmsCellPhone> smsCellPhones, Zone zone, String sendSms, String sendEmail) {
         for (SmsCellPhone smsCellPhone: smsCellPhones) {
             Log.d(TAG, "--smsCellPhone " + smsCellPhone.getCellPhoneNumber());
-            SmsUtil.sendSms(smsCellPhone.getCellPhoneNumber(), "Alerta de Servicio negativa en " + zone.getHeadquarter().getName() + ", " + zone.getName(), getActivity());
+            Log.d(TAG, "--email " + smsCellPhone.getEmail());
+            String message = "Alerta de Servicio negativa en " + zone.getHeadquarter().getName() + ", " + zone.getName();
+            if ("true".equals(sendSms)) {
+                SmsUtil.sendSms(smsCellPhone.getCellPhoneNumber(), message, getActivity());
+            }
+
+            if ("true".equals(sendEmail)) {
+                SendEmailUtil.sendTextEmail("Alerta de servicio negativo", message, smsCellPhone.getEmail());
+            }
         }
+    }
+
+    @Override
+    public void onResume() {
+        Log.d(TAG, "--onResume");
+        loadData();
+        super.onResume();
+    }
+
+    private void loadData() {
+        CampaignDAO campaignDAO = new CampaignDAO(getActivity());
+        UserDAO userDAO = new UserDAO(getActivity());
+        User loginUser = userDAO.getUserLogin();
+
+        //Cargar logo
+        ParameterDAO parameterDAO = new ParameterDAO(getActivity());
+        try {
+            byte[] imageData = parameterDAO.getGeneralLogo(loginUser.getAccount().getCode());
+            if (imageData != null && imageData.length > 0) {
+                Log.d(TAG, "--imageData " + imageData.length);
+                Bitmap bitmap = BitmapFactory.decodeByteArray(imageData, 0, imageData.length);
+                imageViewGeneralLogo.setImageBitmap(bitmap);
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "--Error:  " + e.getMessage());
+        }
+
     }
 
 }

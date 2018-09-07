@@ -4,6 +4,7 @@ package co.smilers.fragments;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -86,7 +87,7 @@ public class SelectCampaignFragment extends Fragment implements View.OnClickList
                             ((StartZoneActivity) getActivity()).navigationController.navigateToHeader(headquarter, zone);
                         }
                     } catch (Exception e) {
-                        Log.e(TAG, e.getMessage());
+                        Log.e(TAG, "--Error: " + e.getMessage());
                     }
                 }
             }
@@ -125,58 +126,87 @@ public class SelectCampaignFragment extends Fragment implements View.OnClickList
         List<Campaign> list = campaignDAO.getCampaign(loginUser.getAccount().getCode());
         //LayoutInflater inflater = LayoutInflater.from(getActivity());
         if (list != null) {
-            int sections = list.size()/2 + list.size() % 2;
-            List<LinearLayout> linearLayouts = new ArrayList<>();
-            //LayoutInflater inflater = LayoutInflater.from(getActivity());
 
-            for (int i = 0; i < sections; i++) {
-                LinearLayout campaignLayout = (LinearLayout) inflater.inflate(R.layout.component_campaign_layout, null);
-                //LinearLayout campaignLayout = (LinearLayout) inflater.inflate(R.layout.component_campaign_layout, linearLayout, true);
-                campaignLayout.setId(i+1);
+            if (list.size() > 1) {
+                int sections = list.size()/2 + list.size() % 2;
+                List<LinearLayout> linearLayouts = new ArrayList<>();
+                //LayoutInflater inflater = LayoutInflater.from(getActivity());
 
-                LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
-                        ViewGroup.LayoutParams.MATCH_PARENT,
-                        ViewGroup.LayoutParams.WRAP_CONTENT,
-                        2.0f
-                );
-                params.setMargins(8, 2, 8, 2);
-                campaignLayout.setLayoutParams(params);
+                for (int i = 0; i < sections; i++) {
+                    LinearLayout campaignLayout = (LinearLayout) inflater.inflate(R.layout.component_campaign_layout, null);
+                    //LinearLayout campaignLayout = (LinearLayout) inflater.inflate(R.layout.component_campaign_layout, linearLayout, true);
+                    campaignLayout.setId(i+1);
 
-                linearLayouts.add(campaignLayout);
+                    LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                            ViewGroup.LayoutParams.MATCH_PARENT,
+                            ViewGroup.LayoutParams.WRAP_CONTENT,
+                            2.0f
+                    );
+                    params.setMargins(8, 2, 8, 2);
+                    campaignLayout.setLayoutParams(params);
 
-            }
+                    linearLayouts.add(campaignLayout);
 
-            int j = 0;
-            for (int i = 0; i < list.size(); i++) {
-                Button campaignButton = (Button) inflater.inflate(R.layout.component_campaign_button, null);
-                //LinearLayout linearLayoutButton = linearLayouts.get(j);
-                //Button campaignButton = (Button) inflater.inflate(R.layout.component_campaign_button, linearLayoutButton, true);
-
-                LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
-                        ViewGroup.LayoutParams.MATCH_PARENT,
-                        ViewGroup.LayoutParams.WRAP_CONTENT,
-                        1.0f
-                );
-                params.setMargins(2, 2, 2, 2);
-                campaignButton.setLayoutParams(params);
-
-                campaignButton.setText(list.get(i).getTitle());
-                campaignButton.setId(list.get(i).getCode().intValue());
-                campaignButton.setOnClickListener(this);
-                linearLayouts.get(j).addView(campaignButton);
-                if (i%2 == 0) {
-                } else {
-                    j++;
                 }
+
+                int j = 0;
+                for (int i = 0; i < list.size(); i++) {
+                    Button campaignButton = (Button) inflater.inflate(R.layout.component_campaign_button, null);
+                    //LinearLayout linearLayoutButton = linearLayouts.get(j);
+                    //Button campaignButton = (Button) inflater.inflate(R.layout.component_campaign_button, linearLayoutButton, true);
+
+                    LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                            ViewGroup.LayoutParams.MATCH_PARENT,
+                            ViewGroup.LayoutParams.WRAP_CONTENT,
+                            1.0f
+                    );
+                    params.setMargins(2, 2, 2, 2);
+                    campaignButton.setLayoutParams(params);
+
+                    campaignButton.setText(list.get(i).getTitle());
+                    campaignButton.setId(list.get(i).getCode().intValue());
+                    campaignButton.setOnClickListener(this);
+                    linearLayouts.get(j).addView(campaignButton);
+                    if (i%2 == 0) {
+                    } else {
+                        j++;
+                    }
+                }
+
+                for (LinearLayout linearLayoutCam : linearLayouts) {
+                    linearLayout.addView(linearLayoutCam);
+                }
+            } else if (list.size() == 1) { // Si solo hay una sola campaña, pasar a las preguntas
+
+                Campaign campaign = campaignDAO.getCampaignByCode(loginUser.getAccount().getCode(), list.get(0).getCode());
+                Zone zone_ = parameterDAO.getZoneByCode(loginUser.getAccount().getCode(), zone);
+                List<QuestionItem> questionItems = campaignDAO.getQuestionItemByCampaign(loginUser.getAccount().getCode(), list.get(0).getCode());
+
+                for (QuestionItem questionItem : questionItems) {
+                    AnswerScore answerScore = new AnswerScore();
+                    answerScore.setQuestionItem(questionItem);
+                    answerScore.setCampaign(campaign);
+                    answerScore.setHeadquarter(headquarter_);
+                    answerScore.setZone(zone_);
+
+                    answerScore.setExcellent(0);
+                    answerScore.setGood(0);
+                    answerScore.setModerate(0);
+                    answerScore.setBad(0);
+                    answerScore.setPoor(0);
+                    answerScore.setScore(0);
+
+
+                    StartZoneActivity.answerScores.add(answerScore);
+                }
+                cancel = true;
+                ((StartZoneActivity) getActivity()).navigationController.navigateToQuestion(headquarter, zone, list.get(0).getCode(), questionItems.size(), 0);
+
+            } else {
+                ((AppCompatActivity)getActivity()).finish();
             }
 
-            for (LinearLayout linearLayoutCam : linearLayouts) {
-                linearLayout.addView(linearLayoutCam);
-            }
         }
-
-
-
     }
 
     @Override

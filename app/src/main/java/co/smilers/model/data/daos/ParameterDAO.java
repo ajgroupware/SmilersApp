@@ -496,6 +496,7 @@ public class ParameterDAO {
             String[] projection = {
                     "id"
                     ,"cell_phone_number"
+                    ,"email"
                     ,"headquarter_code"
                     ,"zone_code"
                     ,"campaign_code"
@@ -529,6 +530,7 @@ public class ParameterDAO {
                     object.setZoneCode(cursor.getLong(cursor.getColumnIndex("zone_code")));
                     object.setCampaignCode(cursor.getLong(cursor.getColumnIndex("campaign_code")));
                     object.setIsActive("true".equals(cursor.getString(cursor.getColumnIndex("is_active"))));
+                    object.setEmail(cursor.getString(cursor.getColumnIndex("email")));
 
                     list.add(object);
                 } while (cursor.moveToNext());
@@ -655,5 +657,154 @@ public class ParameterDAO {
         }
 
         Log.i(TAG, "-- end: deleteCurrentConfig");
+    }
+
+    public void setGeneralLogo(String accountCode, byte[] imageData) {
+        Log.i(TAG, "-- start: setGeneralLogo");
+        SQLiteDatabase db       = null;
+        AppDataHelper mDbHelper = new AppDataHelper(context);
+        long newRowId = 0;
+        try {
+            ContentValues values = new ContentValues();
+            // Column and value of column
+            values.put("account_code", accountCode);
+            values.put("image", imageData);
+            db = mDbHelper.getWritableDatabase();
+            newRowId = db.replaceOrThrow("general_image", null, values);
+            Log.i(TAG, "-- newRowId: " + newRowId);
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        Log.i(TAG, "-- end: setGeneralLogo");
+    }
+
+    public byte[] getGeneralLogo(String accountCode) {
+        Log.i(TAG, "-- start: getGeneralLogo");
+        byte[] imageData = null;
+        AppDataHelper mDbHelper = new AppDataHelper(context);
+        SQLiteDatabase db       = null;
+        Cursor cursor           = null;
+        CurrentConfig object = new CurrentConfig();
+        try {
+            db = mDbHelper.getReadableDatabase();
+
+            String[] projection = {
+                    "account_code"
+                    ,"image"
+            };
+
+            // Define 'where' part of query.
+            String selection = "account_code = ?";
+            // Specify arguments in placeholder order.
+            String[] selectionArgs = {accountCode};
+            String sortOrder = null;
+            cursor = db.query(
+                    "general_image",  // The table to query
+                    projection,                       // The columns to return
+                    selection,                        // The columns for the WHERE clause
+                    selectionArgs,                    // The values for the WHERE clause
+                    null,                             // don't group the rows
+                    null,                             // don't filter by row groups
+                    sortOrder                         // The sort order
+            );
+
+            if (cursor != null && cursor.moveToFirst()) {
+                do {
+                    imageData = cursor.getBlob(cursor.getColumnIndex("image"));
+                } while (cursor.moveToNext());
+            }
+
+        } catch (Exception e){
+            Log.e(TAG, "Error: "+e.getMessage());
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+            if (db != null) {
+                db.close();
+            }
+        }
+        Log.i(TAG, "-- end: getGeneralLogo");
+
+        return imageData;
+    }
+
+    /**
+     * Ingresar o actualizar las canpañas
+     *
+     * @param values
+     */
+    public void addGeneralSettingParameter(ContentValues values, SQLiteDatabase db) {
+        Log.i(TAG, "-- start: addGeneralSettingParameter");
+
+        AppDataHelper mDbHelper = new AppDataHelper(context);
+        long newRowId = 0;
+        try {
+            newRowId = db.replaceOrThrow(
+                    "general_setting_parameter",
+                    null,
+                    values);
+            Log.i(TAG, "-- newRowId: " + newRowId);
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        Log.i(TAG, "-- end: addGeneralSettingParameter");
+    }
+
+    public String getGeneralSettingParameterValue(String accountCode, String parameterKey){
+        Log.i(TAG, "-- start: getGeneralSettingParameterValue");
+        AppDataHelper mDbHelper = new AppDataHelper(context);
+        SQLiteDatabase db       = null;
+        Cursor cursor           = null;
+        String parameterValue = "";
+        try {
+            db = mDbHelper.getReadableDatabase();
+
+            String[] projection = {
+                    "parameter_key"
+                    ,"parameter_value"
+            };
+
+            // Define 'where' part of query.
+            String selection = "account_code = ? and parameter_key = ?";
+            // Specify arguments in placeholder order.
+            String[] selectionArgs = {accountCode, parameterKey};
+            String sortOrder = null;
+            cursor = db.query(
+                    "general_setting_parameter",  // The table to query
+                    projection,                       // The columns to return
+                    selection,                        // The columns for the WHERE clause
+                    selectionArgs,                    // The values for the WHERE clause
+                    null,                             // don't group the rows
+                    null,                             // don't filter by row groups
+                    sortOrder                         // The sort order
+            );
+
+            if (cursor != null && cursor.moveToFirst()) {
+                do {
+                    parameterValue = cursor.getString(cursor.getColumnIndex("parameter_value"));
+                } while (cursor.moveToNext());
+            }
+
+        } catch (Exception e){
+            Log.e(TAG, "Error: "+e.getMessage());
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+            if (db != null) {
+                db.close();
+            }
+        }
+        Log.i(TAG, "-- end: getGeneralSettingParameterValue");
+        return  parameterValue;
     }
 }

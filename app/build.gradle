@@ -1,15 +1,24 @@
 apply plugin: 'com.android.application'
 
 android {
+    signingConfigs {
+        Release {
+            keyAlias 'Smilers'
+            keyPassword 'Smilers'
+            storeFile file('/Users/ajrodriguezsi/PROJECTS/TIPI/Smilers/smilers_keystore_app-key')
+            storePassword 'Smilers'
+        }
+    }
     compileSdkVersion 28
     defaultConfig {
         applicationId "co.smilers"
         minSdkVersion rootProject.minSdkVersion
         targetSdkVersion rootProject.targetSdkVersion
-        versionCode 4
-        versionName '1.0.04'
+        versionCode 5
+        versionName '1.0.05'
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
+        signingConfig signingConfigs.Release
     }
     buildTypes {
         release {
@@ -45,6 +54,8 @@ dependencies {
     testImplementation "junit:junit:$rootProject.junitVersion"
     androidTestImplementation "com.android.support.test:runner:$rootProject.runnerVersion"
     androidTestImplementation "com.android.support.test.espresso:espresso-core:$rootProject.espressoVersion"
+    compile 'com.sun.mail:android-mail:1.5.5'
+    compile 'com.sun.mail:android-activation:1.5.5'
     implementation project(':QuantumTechLib')
 }
 

@@ -15,11 +15,22 @@ import com.android.volley.VolleyError;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import co.smilers.MainActivity;
 import co.smilers.StartZoneActivity;
+import co.smilers.api.ApiUtil;
 import co.smilers.api.CampaignApi;
 import co.smilers.api.ParameterApi;
 import co.smilers.model.AnswerScore;
@@ -45,21 +56,23 @@ public class SyncIntentService extends IntentService {
     // IntentService can perform, e.g. ACTION_FETCH_NEW_ITEMS
     public static final String RECEIVER = "co.smilers.services.RECEIVER";
 
-    public static final String ACTION_SYNC_ALL = "co.smilers.services.action.SYNC_ALL";
-    public static final String ACTION_SYNC_HEADQUARTER = "co.smilers.services.action.SYNC_HEADQUARTER";
-    public static final String ACTION_SYNC_ZONE = "co.smilers.services.action.ZONE";
-    public static final String ACTION_SYNC_GENERAL_HEADER = "co.smilers.services.action.GENERAL_HEADER";
+    public static final String ACTION_SYNC_ALL              = "co.smilers.services.action.SYNC_ALL";
+    public static final String ACTION_SYNC_HEADQUARTER      = "co.smilers.services.action.SYNC_HEADQUARTER";
+    public static final String ACTION_SYNC_ZONE             = "co.smilers.services.action.ZONE";
+    public static final String ACTION_SYNC_GENERAL_HEADER   = "co.smilers.services.action.GENERAL_HEADER";
     public static final String ACTION_SYNC_GENERAL_QUESTION = "co.smilers.services.action.GENERAL_QUESTION";
-    public static final String ACTION_SYNC_CAMPAIGN = "co.smilers.services.action.CAMPAIGN";
-    public static final String ACTION_SYNC_CAMPAIGN_FOOTER = "co.smilers.services.action.CAMPAIGN_FOOTER";
-    public static final String ACTION_SYNC_TARGET_ZONE = "co.smilers.services.action.TARGET_ZONE";
-    public static final String ACTION_SYNC_SMS_CELL_PHONE = "co.smilers.services.action.SMS_CELL_PHONE ";
+    public static final String ACTION_SYNC_CAMPAIGN         = "co.smilers.services.action.CAMPAIGN";
+    public static final String ACTION_SYNC_CAMPAIGN_FOOTER  = "co.smilers.services.action.CAMPAIGN_FOOTER";
+    public static final String ACTION_SYNC_TARGET_ZONE      = "co.smilers.services.action.TARGET_ZONE";
+    public static final String ACTION_SYNC_SMS_CELL_PHONE   = "co.smilers.services.action.SMS_CELL_PHONE ";
+    public static final String ACTION_SYNC_GENERAL_LOGO     = "co.smilers.services.action.GENERAL_LOGO ";
+    public static final String ACTION_SYNC_GENERAL_SETTING_PARAMETER     = "co.smilers.services.action.GENERAL_SETTING_PARAMETER ";
 
-    public static final String ACTION_SYNC_ANSWER = "co.smilers.services.action.ANSWER";
+    public static final String ACTION_SYNC_ANSWER         = "co.smilers.services.action.ANSWER";
     public static final String ACTION_SYNC_GENERAL_ANSWER = "co.smilers.services.action.GENERAL_ANSWER";
 
     // TODO: Rename parameters
-    public static final String ACCOUNT_PARAM = "co.smilers.services.extra.ACCOUNT";
+    public static final String ACCOUNT_PARAM    = "co.smilers.services.extra.ACCOUNT";
     public static final String SYNC_SAVED_PARAM = "co.smilers.services.extra.SYNC_SAVED";
 
     public SyncIntentService() {
@@ -116,7 +129,7 @@ public class SyncIntentService extends IntentService {
             if (ACTION_SYNC_ALL.equals(action)) {
                 final String account = intent.getStringExtra(ACCOUNT_PARAM);
 
-                handleActionSyncAll(account);
+                handleActionSyncAll(account, receiver);
             } else if (ACTION_SYNC_HEADQUARTER.equals(action)) {
                 final String account = intent.getStringExtra(ACCOUNT_PARAM);
 
@@ -159,6 +172,14 @@ public class SyncIntentService extends IntentService {
                 final String account = intent.getStringExtra(ACCOUNT_PARAM);
 
                 handleActionSyncTargetZone(account, receiver);
+            } else if (ACTION_SYNC_GENERAL_LOGO.equals(action)) {
+                final String account = intent.getStringExtra(ACCOUNT_PARAM);
+
+                handleActionSyncGeneralLogo(account, receiver);
+            } else if (ACTION_SYNC_GENERAL_SETTING_PARAMETER.equals(action)) {
+                final String account = intent.getStringExtra(ACCOUNT_PARAM);
+
+                handleActionSyncGeneralSettingParameter(account, receiver);
             }
         }
     }
@@ -167,8 +188,17 @@ public class SyncIntentService extends IntentService {
      * Handle action Foo in the provided background thread with the provided
      * parameters.
      */
-    private void handleActionSyncAll(String account) {
-
+    private void handleActionSyncAll(String account, ResultReceiver receiver) {
+        handleActionSyncHeadquarter(account, receiver);
+        handleActionSyncZone(account, receiver);
+        handleActionSyncCampaign(account, receiver);
+        handleActionSyncCampaignFooter(account, receiver);
+        handleActionSyncGeneralHeader(account, receiver);
+        handleActionSyncSmsCellPone(account, receiver);
+        handleActionSyncGeneralLogo(account, receiver);
+        handleActionSyncGeneralQuestion(account, receiver);
+        handleActionSyncTargetZone(account, receiver);
+        handleActionSyncGeneralSettingParameter(account, receiver);
     }
 
     /**
@@ -720,6 +750,7 @@ public class SyncIntentService extends IntentService {
                                     ContentValues contentValues = new ContentValues();
                                     contentValues.put("id", objects.getLong("id"));
                                     contentValues.put("cell_phone_number", objects.getString("cellPhoneNumber"));
+                                    contentValues.put("email", objects.getString("email"));
                                     contentValues.put("campaign_code", objects.getLong("campaignCode"));
                                     contentValues.put("headquarter_code", objects.getLong("headquarterCode"));
                                     contentValues.put("zone_code", objects.getLong("zoneCode"));
@@ -789,6 +820,141 @@ public class SyncIntentService extends IntentService {
                                 }
                             } else {
                                 Log.i(TAG, "-- sin datos: SmsCellPhone");
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        } finally {
+                            //db.endTransaction();
+                            if (db != null) {
+                                db.close();
+                                db = null;
+                            }
+
+                        }
+
+                        Bundle responseBundle = new Bundle();
+                        responseBundle.putString("RESULT", "OK");
+                        receiver.send(0, responseBundle);
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Log.e(TAG, "-- Error: " + error.getMessage());
+                        Bundle responseBundle = new Bundle();
+                        responseBundle.putString("RESULT", "ERROR");
+                        receiver.send(0, responseBundle);
+                    }
+                });
+    }
+
+    /**
+     * Handle action Baz in the provided background thread with the provided
+     * parameters.
+     */
+    private void handleActionSyncGeneralLogo(String account, final ResultReceiver receiver) {
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        Future<byte[]> result = executor.submit(new Callable<byte[]>() {
+            public byte[] call() throws Exception {
+                try {
+                    byte[] image = getLogoImage(ApiUtil.BASE_PATH + "/parameter/logo/" + account);
+                    return image;
+
+                } catch (Exception e) {
+                    Log.d(TAG, "--Error: " + e.toString());
+                }
+                return null;
+            }
+        });
+
+        try {
+            byte[] image = result.get();
+            if (image != null && image.length > 0) {
+                ParameterDAO parameterDAO = new ParameterDAO(getApplicationContext());
+                parameterDAO.setGeneralLogo(account, image);
+                Log.d(TAG, "--setGeneralLogo: ");
+            }
+
+            Log.d(TAG, "--image: " + image.length);
+            Bundle responseBundle = new Bundle();
+            responseBundle.putString("RESULT", "OK");
+            receiver.send(0, responseBundle);
+        } catch (Exception exception) {
+            exception.printStackTrace();
+            Bundle responseBundle = new Bundle();
+            responseBundle.putString("RESULT", "ERROR");
+            receiver.send(0, responseBundle);
+        }
+    }
+
+    /*
+     * Obtener el contenido binario de la imagen
+     */
+    private byte[] getLogoImage(String imageUrl) {
+        byte[] image = null;
+        try {
+            URL url = new URL(imageUrl);
+            InputStream is = url.openStream();
+
+            byte[] buf = new byte[2048];
+            int length;
+
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            //byte[] buf = new byte[1024];
+
+            while ((length = is.read(buf)) != -1) {
+                out.write(buf, 0, length);
+            }
+
+            /*
+            int n = 0;
+            while ((n = is.read(buf)) != -1) {
+                out.write(buf, 0, n);
+            }
+            */
+
+            is.close();
+            out.close();
+
+            image = out.toByteArray();
+
+        } catch (Exception e) {
+            Log.d(TAG, "--Error: " + e.toString());
+        }
+
+        return image;
+    }
+
+    /**
+     * Handle action Baz in the provided background thread with the provided
+     * parameters.
+     */
+    private void handleActionSyncGeneralSettingParameter(String account, final ResultReceiver receiver) {
+        final ParameterApi parameterApi = new ParameterApi();
+        parameterApi.listGeneralSettingParameter(account, getApplicationContext(), new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+
+                        ParameterDAO parameterDAO = new ParameterDAO(getApplicationContext());
+                        AppDataHelper mDbHelper = new AppDataHelper(getApplicationContext());
+                        SQLiteDatabase db = mDbHelper.getWritableDatabase();
+                        try {
+                            JSONArray generalSettingParameterJson  = new JSONArray(response);
+                            //db.beginTransaction();
+                            if (generalSettingParameterJson != null) {
+
+                                for (int i = 0; i < generalSettingParameterJson.length(); i++) {
+                                    JSONObject objects = generalSettingParameterJson.getJSONObject(i);
+                                    ContentValues contentValues = new ContentValues();
+                                    contentValues.put("parameter_key", objects.getString("parameterKey"));
+                                    contentValues.put("parameter_value", objects.getString("parameterValue"));
+                                    contentValues.put("account_code", account);
+
+                                    parameterDAO.addGeneralSettingParameter(contentValues, db);
+
+                                }
+                            } else {
+                                Log.i(TAG, "-- sin datos: GeneralSettingParameter");
                             }
                         } catch (Exception e) {
                             e.printStackTrace();

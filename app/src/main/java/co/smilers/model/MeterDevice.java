@@ -33,6 +33,8 @@ public class MeterDevice {
   private String deviceIdPush = null;
   @SerializedName("description")
   private String description = null;
+  @SerializedName("currentUser")
+  private String currentUser = null;
 
   /**
    * Identificador único del medidor
@@ -100,6 +102,17 @@ public class MeterDevice {
     this.description = description;
   }
 
+  /**
+   * Usuario actual
+   **/
+  @ApiModelProperty(value = "Usuario actual")
+  public String getCurrentUser() {
+    return currentUser;
+  }
+  public void setCurrentUser(String currentUser) {
+    this.currentUser = currentUser;
+  }
+
 
   @Override
   public boolean equals(Object o) {
@@ -115,7 +128,8 @@ public class MeterDevice {
         (this.deviceSerial == null ? meterDevice.deviceSerial == null : this.deviceSerial.equals(meterDevice.deviceSerial)) &&
         (this.deviceVersionOs == null ? meterDevice.deviceVersionOs == null : this.deviceVersionOs.equals(meterDevice.deviceVersionOs)) &&
         (this.deviceIdPush == null ? meterDevice.deviceIdPush == null : this.deviceIdPush.equals(meterDevice.deviceIdPush)) &&
-        (this.description == null ? meterDevice.description == null : this.description.equals(meterDevice.description));
+        (this.description == null ? meterDevice.description == null : this.description.equals(meterDevice.description)) &&
+        (this.currentUser == null ? meterDevice.currentUser == null : this.currentUser.equals(meterDevice.currentUser));
   }
 
   @Override
@@ -127,6 +141,7 @@ public class MeterDevice {
     result = 31 * result + (this.deviceVersionOs == null ? 0: this.deviceVersionOs.hashCode());
     result = 31 * result + (this.deviceIdPush == null ? 0: this.deviceIdPush.hashCode());
     result = 31 * result + (this.description == null ? 0: this.description.hashCode());
+    result = 31 * result + (this.currentUser == null ? 0: this.currentUser.hashCode());
     return result;
   }
 
@@ -141,6 +156,7 @@ public class MeterDevice {
     sb.append("  deviceVersionOs: ").append(deviceVersionOs).append("\n");
     sb.append("  deviceIdPush: ").append(deviceIdPush).append("\n");
     sb.append("  description: ").append(description).append("\n");
+    sb.append("  currentUser: ").append(currentUser).append("\n");
     sb.append("}\n");
     return sb.toString();
   }

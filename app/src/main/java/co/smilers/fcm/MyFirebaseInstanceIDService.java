@@ -1,9 +1,13 @@
 package co.smilers.fcm;
 
+import android.content.ContentValues;
+import android.os.Build;
 import android.util.Log;
 
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.firebase.iid.FirebaseInstanceIdService;
+
+import co.smilers.model.data.daos.UserDAO;
 
 
 public class MyFirebaseInstanceIDService extends FirebaseInstanceIdService {
@@ -22,10 +26,24 @@ public class MyFirebaseInstanceIDService extends FirebaseInstanceIdService {
         // If you want to send messages to this application instance or
         // manage this apps subscriptions on the server side, send the
         // Instance ID token to your app server.
-        sendRegistrationToServer(refreshedToken);
+        sendRegistrationToDB(refreshedToken);
     }
 
-    private void sendRegistrationToServer(String refreshedToken) {
+    private void sendRegistrationToDB(String refreshedToken) {
+        Log.d(TAG, "--sendRegistrationToDB: ");
+        try {
+            UserDAO userDAO = new UserDAO(getApplicationContext());
+            ContentValues contentValues = new ContentValues();
+            contentValues.put("idPush", refreshedToken);
+            contentValues.put("osVersionDispositivo", "Android");
+            contentValues.put("referenciaDispositivo", String.valueOf(Build.VERSION.SDK_INT));
+            contentValues.put("serialDispositivo", Build.SERIAL);
+
+            userDAO.addDevice(contentValues);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
 
     }
 }

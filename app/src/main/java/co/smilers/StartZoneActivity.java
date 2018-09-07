@@ -19,6 +19,8 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.EditText;
 
+import com.google.firebase.messaging.FirebaseMessaging;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -174,6 +176,10 @@ public class StartZoneActivity extends AppCompatActivity {
             getSupportFragmentManager().beginTransaction().replace(R.id.fullscreen_content, generalHeaderFragment).commit();
         }
 
+
+        //Temporalmente
+        //Suscribir la aplicación al FCM topic
+        FirebaseMessaging.getInstance().subscribeToTopic("smilersConfig");
     }
 
     @Override
@@ -228,7 +234,7 @@ public class StartZoneActivity extends AppCompatActivity {
         // Do nothing or catch the keys you want to block
         Log.d(TAG, "--onKeyDown " + keyCode);
         Log.d(TAG, "--mCurrentFragment " + mCurrentFragment);
-        if (HEADER_FRAGMENT_TAG.equals(mCurrentFragment)) {
+        if (HEADER_FRAGMENT_TAG.equals(mCurrentFragment) || SELECT_FRAGMENT_TAG.equals(mCurrentFragment) || QUESTION_FRAGMENT_TAG.equals(mCurrentFragment)) {
 
 
             AlertDialog.Builder builder = new AlertDialog.Builder(this);

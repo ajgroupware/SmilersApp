@@ -12,6 +12,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 
 import co.smilers.model.Account;
+import co.smilers.model.MeterDevice;
 import co.smilers.model.User;
 import co.smilers.model.data.AppDataHelper;
 
@@ -205,5 +206,117 @@ public class UserDAO {
         }
 
         Log.i(TAG, "-- end: logout");
+    }
+
+    /**
+     * Ingresar o actualizar un dispositivo
+     *
+     * @param values
+     */
+    public void addDevice(ContentValues values) {
+        Log.i(TAG, "-- start: addDevice");
+
+        AppDataHelper mDbHelper = new AppDataHelper(context);
+        SQLiteDatabase db       = null;
+        long newRowId = 0;
+        try {
+            db = mDbHelper.getWritableDatabase();
+            db.beginTransaction();
+
+            newRowId = db.replaceOrThrow(
+                    "Device",
+                    null,
+                    values);
+
+            db.setTransactionSuccessful();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            db.endTransaction();
+            db = null;
+        }
+
+        Log.i(TAG, "-- end: addDevice");
+    }
+
+    /**
+     * Buscar dispositivo
+     *
+     * @return Parameter
+     */
+    public MeterDevice getDevice(){
+        Log.i(TAG, "-- start: getDevice");
+        MeterDevice object = null;
+        AppDataHelper mDbHelper = new AppDataHelper(context);
+        SQLiteDatabase db       = null;
+        Cursor cursor           = null;
+        try {
+            db = mDbHelper.getReadableDatabase();
+
+            String[] projection = {
+                    "idPush"
+                    ,"osVersionDispositivo"
+                    ,"referenciaDispositivo"
+                    ,"serialDispositivo"
+            };
+
+            // Define 'where' part of query.
+            String selection =  null;
+            // Specify arguments in placeholder order.
+            String[] selectionArgs = null;
+            String sortOrder = null;
+            cursor = db.query(
+                    "Device",  // The table to query
+                    projection,                       // The columns to return
+                    selection,                        // The columns for the WHERE clause
+                    selectionArgs,                    // The values for the WHERE clause
+                    null,                             // don't group the rows
+                    null,                             // don't filter by row groups
+                    sortOrder                         // The sort order
+            );
+            if (cursor != null && cursor.moveToFirst()) {
+                object = new MeterDevice();
+                object.setDeviceIdPush(cursor.getString(cursor.getColumnIndex("idPush")));
+                object.setDeviceSerial(cursor.getString(cursor.getColumnIndex("serialDispositivo")));
+                object.setDeviceVersionOs(cursor.getString(cursor.getColumnIndex("osVersionDispositivo")));
+                object.setDescription(cursor.getString(cursor.getColumnIndex("serialDispositivo")));
+
+            }
+
+        } catch (Exception e){
+            Log.e(TAG, "--Error: "+e.getMessage());
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+            if (db != null) {
+                db.close();
+            }
+        }
+        Log.i(TAG, "-- end: getDevice");
+        return  object;
+    }
+
+    public void deleteDevice() {
+        Log.i(TAG, "-- start: deleteDevice");
+        SQLiteDatabase db = null;
+        AppDataHelper mDbHelper = new AppDataHelper(context);
+        long newRowId = 0;
+        try {
+            db = mDbHelper.getReadableDatabase();
+            String where = null;
+            String[] arg = null;
+            newRowId = db.delete("Device", where, arg);
+            Log.i(TAG, "-- newRowId: " + newRowId);
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        Log.i(TAG, "-- end: deleteDevice");
     }
 }

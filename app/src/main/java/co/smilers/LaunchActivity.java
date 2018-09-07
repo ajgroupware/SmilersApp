@@ -15,6 +15,7 @@ import android.util.Log;
 import com.android.volley.NetworkResponse;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
+import com.google.firebase.iid.FirebaseInstanceId;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -28,6 +29,7 @@ import co.smilers.api.AccountApi;
 import co.smilers.fragments.SelectCampaignFragment;
 import co.smilers.model.CurrentConfig;
 import co.smilers.model.Login;
+import co.smilers.model.MeterDevice;
 import co.smilers.model.User;
 import co.smilers.model.data.daos.ParameterDAO;
 import co.smilers.model.data.daos.UserDAO;
@@ -83,9 +85,36 @@ public class LaunchActivity extends AppCompatActivity {
             final String userName = data.getStringExtra(LoginActivity.RESPONSE_USERNAME);
             final String password = data.getStringExtra(LoginActivity.RESPONSE_PASSWORD);
             UserDAO userDAO = new UserDAO(this);
+            MeterDevice meterDevice = userDAO.getDevice();
             Login login = new Login();
             login.setUserName(userName);
             login.setPassword(password);
+
+            if (meterDevice != null && meterDevice.getId() != null) {
+                login.setIdPush(meterDevice.getDeviceIdPush());
+            } else {
+                // Now manually call onTokenRefresh()
+                Log.d(TAG, "--Getting new token");
+                String hedToken = FirebaseInstanceId.getInstance().getToken();
+                Log.d(TAG, "--hedToken " + hedToken);
+
+                if (hedToken != null) {
+                    userDAO.deleteDevice();
+
+                    ContentValues contentValues = new ContentValues();
+                    contentValues.put("idPush", hedToken);
+                    contentValues.put("osVersionDispositivo", "Android");
+                    contentValues.put("referenciaDispositivo", String.valueOf(Build.VERSION.SDK_INT));
+                    contentValues.put("serialDispositivo", Build.SERIAL);
+
+                    userDAO.addDevice(contentValues);
+
+                    login.setIdPush(hedToken);
+                } else {
+                    // Now manually call onTokenRefresh()
+                    login.setIdPush("NO_ID_PUSH");
+                }
+            }
 
             AccountApi accountApi = new AccountApi();
             //DeviceDAO deviceDAO = new DeviceDAO(this);

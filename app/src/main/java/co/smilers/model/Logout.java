@@ -16,12 +16,10 @@ import io.swagger.annotations.*;
 import com.google.gson.annotations.SerializedName;
 
 @ApiModel(description = "")
-public class Login {
+public class Logout {
   
   @SerializedName("userName")
   private String userName = null;
-  @SerializedName("password")
-  private String password = null;
   @SerializedName("idPush")
   private String idPush = null;
 
@@ -33,16 +31,6 @@ public class Login {
   }
   public void setUserName(String userName) {
     this.userName = userName;
-  }
-
-  /**
-   **/
-  @ApiModelProperty(value = "")
-  public String getPassword() {
-    return password;
-  }
-  public void setPassword(String password) {
-    this.password = password;
   }
 
   /**
@@ -64,17 +52,15 @@ public class Login {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    Login login = (Login) o;
-    return (this.userName == null ? login.userName == null : this.userName.equals(login.userName)) &&
-        (this.password == null ? login.password == null : this.password.equals(login.password)) &&
-        (this.idPush == null ? login.idPush == null : this.idPush.equals(login.idPush));
+    Logout logout = (Logout) o;
+    return (this.userName == null ? logout.userName == null : this.userName.equals(logout.userName)) &&
+        (this.idPush == null ? logout.idPush == null : this.idPush.equals(logout.idPush));
   }
 
   @Override
   public int hashCode() {
     int result = 17;
     result = 31 * result + (this.userName == null ? 0: this.userName.hashCode());
-    result = 31 * result + (this.password == null ? 0: this.password.hashCode());
     result = 31 * result + (this.idPush == null ? 0: this.idPush.hashCode());
     return result;
   }
@@ -82,10 +68,9 @@ public class Login {
   @Override
   public String toString()  {
     StringBuilder sb = new StringBuilder();
-    sb.append("class Login {\n");
+    sb.append("class Logout {\n");
     
     sb.append("  userName: ").append(userName).append("\n");
-    sb.append("  password: ").append(password).append("\n");
     sb.append("  idPush: ").append(idPush).append("\n");
     sb.append("}\n");
     return sb.toString();

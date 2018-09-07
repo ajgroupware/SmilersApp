@@ -1,6 +1,8 @@
 package co.smilers.fragments;
 
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
@@ -10,6 +12,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.util.List;
@@ -78,7 +81,7 @@ public class ThanksFragment extends Fragment {
                         ((StartZoneActivity) getActivity()).navigationController.navigateToHeader(headquarter, zone);
                     }
                 } catch (Exception e) {
-                    Log.e(TAG, e.getMessage());
+                    Log.e(TAG, "--Error: " + e.getMessage());
                 }
 
             }
@@ -87,7 +90,8 @@ public class ThanksFragment extends Fragment {
 
     private TextView textviewDescription;
     private TextView textviewTitle;
-    ConstraintLayout constraintQuestion = null;
+    private ConstraintLayout constraintQuestion = null;
+    private ImageView imageViewGeneralLogo;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -97,6 +101,7 @@ public class ThanksFragment extends Fragment {
         constraintQuestion = view.findViewById(R.id.constraint_thanks);
         textviewTitle = (TextView) view.findViewById(R.id.textview_title);
         textviewDescription = (TextView) view.findViewById(R.id.textview_description);
+        imageViewGeneralLogo = (ImageView) view.findViewById(R.id.ImageView_general_logo);
         return view;
     }
 
@@ -113,6 +118,20 @@ public class ThanksFragment extends Fragment {
             CampaignDAO campaignDAO = new CampaignDAO(getActivity());
             UserDAO userDAO = new UserDAO(getActivity());
             User loginUser = userDAO.getUserLogin();
+
+            //Cargar logo
+            ParameterDAO parameterDAO = new ParameterDAO(getActivity());
+            try {
+                byte[] imageData = parameterDAO.getGeneralLogo(loginUser.getAccount().getCode());
+                if (imageData != null && imageData.length > 0) {
+                    Log.d(TAG, "--imageData " + imageData.length);
+                    Bitmap bitmap = BitmapFactory.decodeByteArray(imageData, 0, imageData.length);
+                    imageViewGeneralLogo.setImageBitmap(bitmap);
+                }
+            } catch (Exception e) {
+                Log.e(TAG, "--Error:  " + e.getMessage());
+            }
+
             List<CampaignFooter> campaignFooters = campaignDAO.getCampaignFooter(loginUser.getAccount().getCode());
             if (campaignFooters != null && campaignFooters.size() > 0) {
                 CampaignFooter campaignFooter = campaignFooters.get(0);
@@ -127,7 +146,7 @@ public class ThanksFragment extends Fragment {
 
             }
         } catch (Exception e) {
-            Log.e(TAG, e.getMessage());
+            Log.e(TAG, "--Error: " + e.getMessage());
         }
     }
 

@@ -2,6 +2,8 @@ package co.smilers.fragments;
 
 
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.media.MediaPlayer;
 import android.os.Bundle;
@@ -96,7 +98,7 @@ public class GeneralQuestionFragment extends Fragment {
                             ((StartZoneActivity) getActivity()).navigationController.navigateToHeader(headquarter, zone);
                         }
                     } catch (Exception e) {
-                        Log.e(TAG, e.getMessage());
+                        Log.e(TAG, "--Error: " + e.getMessage());
                     }
 
                 }
@@ -104,8 +106,9 @@ public class GeneralQuestionFragment extends Fragment {
         }, ConstantsUtil.WAIT_TIME_ANSWER);
     }
 
-    TextView textviewDescription = null;
-    ConstraintLayout constraintQuestion = null;
+    private TextView textviewDescription = null;
+    private ConstraintLayout constraintQuestion = null;
+    private ImageView imageViewGeneralLogo;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -122,7 +125,7 @@ public class GeneralQuestionFragment extends Fragment {
         ImageView regular = view.findViewById(R.id.imageview_regular);
         ImageView bad = view.findViewById(R.id.imageview_bad);
         ImageView appalling = view.findViewById(R.id.imageview_appalling);
-
+        imageViewGeneralLogo = (ImageView) view.findViewById(R.id.ImageView_general_logo);
 
 
 
@@ -265,6 +268,16 @@ public class GeneralQuestionFragment extends Fragment {
 
     }
 
+    public void showSelectCampaign() {
+        cancel = true;
+        try {
+            ((StartZoneActivity) getActivity()).navigationController.navigateToSelectCampaign(headquarter, zone);
+        } catch (Exception e) {
+            Log.e(TAG, "--Error " + e.getMessage());
+        }
+
+    }
+
     private void sendAnswer() {
         UserDAO userDAO = new UserDAO(getActivity());
         User loginUser = userDAO.getUserLogin();
@@ -341,7 +354,7 @@ public class GeneralQuestionFragment extends Fragment {
                 try {
                     dialogFragment.closeDialog();
                 } catch (Exception e) {
-                    Log.e(TAG, e.getMessage());
+                    Log.e(TAG, "--Error: " + e.getMessage());
                 }
 
 
@@ -365,9 +378,22 @@ public class GeneralQuestionFragment extends Fragment {
             CampaignDAO campaignDAO = new CampaignDAO(getActivity());
             UserDAO userDAO = new UserDAO(getActivity());
             User loginUser = userDAO.getUserLogin();
+
+            //Cargar logo
+            ParameterDAO parameterDAO = new ParameterDAO(getActivity());
+            try {
+                byte[] imageData = parameterDAO.getGeneralLogo(loginUser.getAccount().getCode());
+                if (imageData != null && imageData.length > 0) {
+                    Log.d(TAG, "--imageData " + imageData.length);
+                    Bitmap bitmap = BitmapFactory.decodeByteArray(imageData, 0, imageData.length);
+                    imageViewGeneralLogo.setImageBitmap(bitmap);
+                }
+            } catch (Exception e) {
+                Log.e(TAG, "--Error:  " + e.getMessage());
+            }
+
             List<GeneralQuestionItem> generalQuestionItems = campaignDAO.getGeneralQuestionItem(loginUser.getAccount().getCode());
             if (generalQuestionItems != null && generalQuestionItems.size() > 0) {
-                ParameterDAO parameterDAO = new ParameterDAO(getActivity());
                 GeneralQuestionItem generalQuestionItem = generalQuestionItems.get(0);
                 Headquarter headquarter_ = parameterDAO.getHeadquarterByCode(loginUser.getAccount().getCode(), headquarter);
                 Zone zone_ = parameterDAO.getZoneByCode(loginUser.getAccount().getCode(), zone);
@@ -397,16 +423,23 @@ public class GeneralQuestionFragment extends Fragment {
 
                 StartZoneActivity.answerGeneralScore.add(answerScore);
 
+            } else {
+                // No hay pregunta general que mostrar
+                showSelectCampaign();
             }
         } catch (Exception e) {
-            Log.e(TAG, e.getMessage());
+            Log.e(TAG, "--Error: " + e.getMessage());
         }
     }
 
-    private void sendSms() {
+    private void sendAlert() {
         ParameterDAO parameterDAO = new ParameterDAO(getActivity());
         UserDAO userDAO = new UserDAO(getActivity());
         User loginUser = userDAO.getUserLogin();
+
+        String sendSms = parameterDAO.getGeneralSettingParameterValue(loginUser.getAccount().getCode(), "");
+        String sendEmail = parameterDAO.getGeneralSettingParameterValue(loginUser.getAccount().getCode(), "");
+
         List<SmsCellPhone> smsCellPhones = parameterDAO.getSmsCellPhone(loginUser.getAccount().getCode(), headquarter);
         if (smsCellPhones != null) {
             List<SmsCellPhone> smsCellPhonesZones = new ArrayList<>();
