@@ -29,6 +29,7 @@ import co.com.groupware.quantum.api.ApiInvoker;
 import co.com.groupware.quantum.api.Pair;
 import co.smilers.model.AnswerGeneralScore;
 import co.smilers.model.AnswerScore;
+import co.smilers.model.RequestAssistance;
 
 public class CampaignApi {
   String basePath = ApiUtil.BASE_PATH;
@@ -499,6 +500,65 @@ public class CampaignApi {
 
         try {
             apiInvoker.invokeAPI(basePath, path, "GET", queryParams, postBody, headerParams, formParams, contentType, authNames, mContext,
+                    new Response.Listener<String>() {
+                        @Override
+                        public void onResponse(String localVarResponse) {
+
+                                responseListener.onResponse(localVarResponse);
+
+                        }
+                    }, new Response.ErrorListener() {
+                        @Override
+                        public void onErrorResponse(VolleyError error) {
+                            errorListener.onErrorResponse(error);
+                        }
+                    });
+        } catch (ApiException ex) {
+            errorListener.onErrorResponse(new VolleyError(ex));
+        }
+    }
+
+    /**
+     * Agregar solicitud de asistencia
+     * Agregar nueva solicitud de asistencia
+     * @param account Cuenta activa y asociada a la sede   * @param requestAssistance Objecto de solicitud
+     */
+    public void addRequestAssistance (String account, List<RequestAssistance> requestAssistance, Context mContext, final Response.Listener<String> responseListener, final Response.ErrorListener errorListener) {
+        Object postBody = requestAssistance;
+
+        // verify the required parameter 'account' is set
+        if (account == null) {
+            VolleyError error = new VolleyError("Missing the required parameter 'account' when calling addRequestAssistance",
+                    new ApiException(400, "Missing the required parameter 'account' when calling addRequestAssistance"));
+        }
+        // verify the required parameter 'requestAssistance' is set
+        if (requestAssistance == null) {
+            VolleyError error = new VolleyError("Missing the required parameter 'requestAssistance' when calling addRequestAssistance",
+                    new ApiException(400, "Missing the required parameter 'requestAssistance' when calling addRequestAssistance"));
+        }
+
+        // create path and map variables
+        String path = "/campaign/requestAssistance/{account}".replaceAll("\\{format\\}","json").replaceAll("\\{" + "account" + "\\}", apiInvoker.escapeString(account.toString()));
+
+        // query params
+        List<Pair> queryParams = new ArrayList<Pair>();
+        // header params
+        Map<String, String> headerParams = new HashMap<String, String>();
+        // form params
+        Map<String, String> formParams = new HashMap<String, String>();
+
+
+
+        String[] contentTypes = {
+                "application/json; charset=utf-8","application/xml; charset=utf-8"
+        };
+        String contentType = contentTypes.length > 0 ? contentTypes[0] : "application/json";
+
+
+        String[] authNames = new String[] { };
+
+        try {
+            apiInvoker.invokeAPI(basePath, path, "POST", queryParams, postBody, headerParams, formParams, contentType, authNames, mContext,
                     new Response.Listener<String>() {
                         @Override
                         public void onResponse(String localVarResponse) {

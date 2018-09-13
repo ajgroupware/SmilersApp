@@ -133,7 +133,10 @@ public class CampaignDAO {
                     object.setEndDate(cursor.getString(cursor.getColumnIndex("end_date")));
                     object.setIsPublished("true".equals(cursor.getString(cursor.getColumnIndex("is_published"))) ? true : false );
 
-                    list.add(object);
+                    if (!"Satisfacción General  Colina".equals(object.getTitle()) && !"Satisfacción General Poblado".equals(object.getTitle())) { //Ajuste temporal para el éxito
+                        list.add(object);
+                    }
+
                 } while (cursor.moveToNext());
             }
 

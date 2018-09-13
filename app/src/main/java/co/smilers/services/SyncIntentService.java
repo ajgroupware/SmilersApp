@@ -35,6 +35,7 @@ import co.smilers.api.CampaignApi;
 import co.smilers.api.ParameterApi;
 import co.smilers.model.AnswerScore;
 import co.smilers.model.Headquarter;
+import co.smilers.model.RequestAssistance;
 import co.smilers.model.User;
 import co.smilers.model.Zone;
 import co.smilers.model.data.AppDataHelper;
@@ -70,6 +71,7 @@ public class SyncIntentService extends IntentService {
 
     public static final String ACTION_SYNC_ANSWER         = "co.smilers.services.action.ANSWER";
     public static final String ACTION_SYNC_GENERAL_ANSWER = "co.smilers.services.action.GENERAL_ANSWER";
+    public static final String ACTION_SYNC_REQUEST_ASSISTANCE  = "co.smilers.services.action.REQUEST_ASSISTANCE";
 
     // TODO: Rename parameters
     public static final String ACCOUNT_PARAM    = "co.smilers.services.extra.ACCOUNT";
@@ -164,6 +166,11 @@ public class SyncIntentService extends IntentService {
                 final Boolean syncSaved = intent.getBooleanExtra(SYNC_SAVED_PARAM, false);
 
                 handleActionSyncAnswer(account, syncSaved, receiver);
+            } else if (ACTION_SYNC_REQUEST_ASSISTANCE.equals(action)) {
+                final String account = intent.getStringExtra(ACCOUNT_PARAM);
+                final Boolean syncSaved = intent.getBooleanExtra(SYNC_SAVED_PARAM, false);
+
+                handleActionSyncRequestAssistance(account, StartZoneActivity.requestAssistances, syncSaved, receiver);
             } else if (ACTION_SYNC_SMS_CELL_PHONE.equals(action)) {
                 final String account = intent.getStringExtra(ACCOUNT_PARAM);
 
@@ -628,6 +635,44 @@ public class SyncIntentService extends IntentService {
     private void handleActionSyncAnswer(String account, final Boolean isSyncSaved, final ResultReceiver receiver) {
         final CampaignApi campaignApi = new CampaignApi();
         campaignApi.addAnswerScore(account, isSyncSaved ? StartZoneActivity.savedAnswerScores : StartZoneActivity.answerScores  , getApplicationContext(), new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        Log.d(TAG, "-- onResponse: " + response);
+
+
+                        Bundle responseBundle = new Bundle();
+                        responseBundle.putString("RESULT", "OK");
+                        receiver.send(0, responseBundle);
+
+                        if (isSyncSaved) { //Eliminar las calificaciones enviadas
+                            deleteSavedSyncAnswer();
+                        }
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Log.e(TAG, "-- Error: " + error.getMessage());
+                        Bundle responseBundle = new Bundle();
+                        responseBundle.putString("RESULT", "ERROR");
+
+                        if (!isSyncSaved) { //si se envia los que ya están almacenados en la base de datos, no guardar de nuevo
+                            saveNoSyncAnswer();
+                        }
+
+                        receiver.send(0, responseBundle);
+
+                    }
+                });
+    }
+
+    /**
+     * Handle action Baz in the provided background thread with the provided
+     * parameters.
+     */
+    private void handleActionSyncRequestAssistance(String account, List<RequestAssistance> requestAssistances, final Boolean isSyncSaved, final ResultReceiver receiver) {
+        final CampaignApi campaignApi = new CampaignApi();
+        campaignApi.addRequestAssistance(account, requestAssistances  , getApplicationContext(), new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {
                         Log.d(TAG, "-- onResponse: " + response);

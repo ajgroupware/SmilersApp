@@ -31,6 +31,7 @@ import co.smilers.fragments.SelectCampaignFragment;
 import co.smilers.fragments.ThanksFragment;
 import co.smilers.model.AnswerGeneralScore;
 import co.smilers.model.AnswerScore;
+import co.smilers.model.RequestAssistance;
 import co.smilers.model.User;
 import co.smilers.model.data.daos.ParameterDAO;
 import co.smilers.model.data.daos.UserDAO;
@@ -326,4 +327,5 @@ public class StartZoneActivity extends AppCompatActivity {
     public static List<AnswerScore> answerScores;
     public static List<AnswerGeneralScore> answerGeneralScore;
     public static List<AnswerScore> savedAnswerScores;
+    public static List<RequestAssistance> requestAssistances;
 }

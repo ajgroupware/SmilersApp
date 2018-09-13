@@ -29,6 +29,7 @@ import co.smilers.model.Campaign;
 import co.smilers.model.GeneralQuestionItem;
 import co.smilers.model.Headquarter;
 import co.smilers.model.QuestionItem;
+import co.smilers.model.RequestAssistance;
 import co.smilers.model.SmsCellPhone;
 import co.smilers.model.User;
 import co.smilers.model.Zone;
@@ -467,7 +468,6 @@ public class GeneralQuestionFragment extends Fragment {
             SmsUtil.sendSms(smsCellPhone.getCellPhoneNumber(), "Alerta de Servicio negativa en " + zone.getHeadquarter().getName() + ", " + zone.getName(), getActivity());
         }
     }
-
 
 
 

@@ -24,6 +24,7 @@ import java.util.List;
 import co.smilers.R;
 import co.smilers.StartZoneActivity;
 import co.smilers.model.AnswerScore;
+import co.smilers.model.RequestAssistance;
 import co.smilers.model.SmsCellPhone;
 import co.smilers.model.User;
 import co.smilers.model.Zone;
@@ -420,6 +421,29 @@ public class QuestionFragment extends Fragment {
             }
 
             //Toast.makeText(getActivity(), "En unos momentos estaremos contigo, gracias", Toast.LENGTH_LONG).show();
+
+            try { //Enviar solicitud de asistencia
+                List<RequestAssistance> requestAssistances = new ArrayList<>();
+                RequestAssistance requestAssistance = new RequestAssistance();
+
+                requestAssistance.setHeadquarter(StartZoneActivity.answerScores.get(actualQuestion.intValue()).getHeadquarter());
+                requestAssistance.setZone(StartZoneActivity.answerScores.get(actualQuestion.intValue()).getZone());
+                requestAssistance.setQuestionItem(StartZoneActivity.answerScores.get(actualQuestion.intValue()).getQuestionItem());
+                requestAssistance.setCityCode(StartZoneActivity.answerScores.get(actualQuestion.intValue()).getHeadquarter().getCity().getCode());
+
+                requestAssistances.add(requestAssistance);
+                StartZoneActivity.requestAssistances = requestAssistances;
+                getActivity().startService(createCallingIntent(loginUser.getAccount().getCode(), SyncIntentService.ACTION_SYNC_REQUEST_ASSISTANCE,  new SyncIntentServiceReceiver.Listener() {
+                    @Override
+                    public void onReceiveResult(int resultCode, Bundle resultData) {
+                        Log.d(TAG, "--onReceiveResult requestAssistance");
+                        StartZoneActivity.requestAssistances = new ArrayList<>();
+
+                    }
+                }));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 
