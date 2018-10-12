@@ -14,11 +14,19 @@ import android.util.Log;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 import co.smilers.R;
+import co.smilers.StartZoneActivity;
 import co.smilers.fragments.HeadquarterFragment;
+import co.smilers.model.AnswerBooleanScore;
+import co.smilers.model.AnswerGeneralScore;
+import co.smilers.model.AnswerScore;
 import co.smilers.model.User;
+import co.smilers.model.data.daos.CampaignDAO;
 import co.smilers.model.data.daos.UserDAO;
 import co.smilers.services.SyncIntentService;
 import co.smilers.services.SyncIntentServiceReceiver;
@@ -57,6 +65,8 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                     }
                 }));
 
+            } else if ("SYNC_ANSWER".equals(action)) {
+                syncAnswer();
             }
 
             return;
@@ -78,6 +88,8 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                     }
                 }));
 
+            } else if ("SYNC_ANSWER".equals(action)) {
+                syncAnswer();
             }
 
             return;
@@ -131,5 +143,58 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         }
     };
 
+
+    private void syncAnswer() {
+        try {
+            //Toast.makeText(getApplicationContext(), "test", Toast.LENGTH_SHORT).show();
+            Log.i(TAG, "-- handleMessage " + new SimpleDateFormat("HH:mm:ss").format(new Date()));
+            UserDAO userDAO = new UserDAO(getApplicationContext());
+            User loginUser = userDAO.getUserLogin();
+            CampaignDAO campaignDAO = new CampaignDAO(getApplicationContext());
+            List<AnswerScore> answerScores = campaignDAO.getAnswerScore(loginUser.getAccount().getCode());
+            if (answerScores != null && answerScores.size() > 0) {
+                Log.i(TAG, "-- answerScores " + answerScores.size());
+                StartZoneActivity.savedAnswerScores = answerScores;
+                startService(createCallingIntent(loginUser.getAccount().getCode(), SyncIntentService.ACTION_SYNC_ANSWER,  new SyncIntentServiceReceiver.Listener() {
+                    @Override
+                    public void onReceiveResult(int resultCode, Bundle resultData) {
+                        Log.d(TAG, "--onReceiveResult syncAnswer");
+
+                    }
+                }));
+            }
+
+
+            List<AnswerGeneralScore> answerGeneralScores = campaignDAO.getAnswerGeneralScore(loginUser.getAccount().getCode());
+            if (answerGeneralScores != null && answerGeneralScores.size() > 0) {
+                Log.i(TAG, "-- answerGeneralScores " + answerGeneralScores.size());
+                StartZoneActivity.savedAnswerGeneralScore = answerGeneralScores;
+                startService(createCallingIntent(loginUser.getAccount().getCode(), SyncIntentService.ACTION_SYNC_GENERAL_ANSWER,  new SyncIntentServiceReceiver.Listener() {
+                    @Override
+                    public void onReceiveResult(int resultCode, Bundle resultData) {
+                        Log.d(TAG, "--onReceiveResult syncAnswerGeneral");
+
+                    }
+                }));
+            }
+
+            List<AnswerBooleanScore> answerBooleanScore = campaignDAO.getAnswerBooleanScore(loginUser.getAccount().getCode());
+            Log.i(TAG, "-- answerBooleanScore " + answerBooleanScore.size());
+            if (answerBooleanScore != null && answerBooleanScore.size() > 0) {
+                Log.i(TAG, "-- answerBooleanScore " + answerBooleanScore.size());
+                StartZoneActivity.savedAnswerBooleanScore = answerBooleanScore;
+                startService(createCallingIntent(loginUser.getAccount().getCode(), SyncIntentService.ACTION_SYNC_BOOLEAN_ANSWER,  new SyncIntentServiceReceiver.Listener() {
+                    @Override
+                    public void onReceiveResult(int resultCode, Bundle resultData) {
+                        Log.d(TAG, "--onReceiveResult syncAnswerBoolean");
+
+                    }
+                }));
+            }
+
+        } catch (Exception e) {
+            Log.e(TAG, "-- Error: " + e.getMessage());
+        }
+    }
 
 }

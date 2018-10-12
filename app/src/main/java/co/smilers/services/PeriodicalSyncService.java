@@ -16,6 +16,8 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import co.smilers.StartZoneActivity;
+import co.smilers.model.AnswerBooleanScore;
+import co.smilers.model.AnswerGeneralScore;
 import co.smilers.model.AnswerScore;
 import co.smilers.model.User;
 import co.smilers.model.data.daos.CampaignDAO;
@@ -76,6 +78,35 @@ public class PeriodicalSyncService extends Service {
                         }
                     }));
                 }
+
+
+                List<AnswerGeneralScore> answerGeneralScores = campaignDAO.getAnswerGeneralScore(loginUser.getAccount().getCode());
+                if (answerGeneralScores != null && answerGeneralScores.size() > 0) {
+                    Log.i(TAG, "-- answerGeneralScores " + answerGeneralScores.size());
+                    StartZoneActivity.savedAnswerGeneralScore = answerGeneralScores;
+                    startService(createCallingIntent(loginUser.getAccount().getCode(), SyncIntentService.ACTION_SYNC_GENERAL_ANSWER,  new SyncIntentServiceReceiver.Listener() {
+                        @Override
+                        public void onReceiveResult(int resultCode, Bundle resultData) {
+                            Log.d(TAG, "--onReceiveResult syncAnswerGeneral");
+
+                        }
+                    }));
+                }
+
+                List<AnswerBooleanScore> answerBooleanScore = campaignDAO.getAnswerBooleanScore(loginUser.getAccount().getCode());
+                Log.i(TAG, "-- answerBooleanScore " + answerBooleanScore.size());
+                if (answerBooleanScore != null && answerBooleanScore.size() > 0) {
+                    Log.i(TAG, "-- answerBooleanScore " + answerBooleanScore.size());
+                    StartZoneActivity.savedAnswerBooleanScore = answerBooleanScore;
+                    startService(createCallingIntent(loginUser.getAccount().getCode(), SyncIntentService.ACTION_SYNC_BOOLEAN_ANSWER,  new SyncIntentServiceReceiver.Listener() {
+                        @Override
+                        public void onReceiveResult(int resultCode, Bundle resultData) {
+                            Log.d(TAG, "--onReceiveResult syncAnswerBoolean");
+
+                        }
+                    }));
+                }
+
             } catch (Exception e) {
                 Log.e(TAG, "-- Error: " + e.getMessage());
             }

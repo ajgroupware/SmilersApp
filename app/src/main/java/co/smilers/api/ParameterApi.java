@@ -198,4 +198,53 @@ public class ParameterApi {
         }
     }
 
+    /**
+     * Lista las ciudades
+     * Lista las ciudades
+
+     */
+    public void listCity (Context mContext, final Response.Listener<String> responseListener, final Response.ErrorListener errorListener) {
+        Object postBody = null;
+
+
+        // create path and map variables
+        String path = "/parameter/city".replaceAll("\\{format\\}","json");
+
+        // query params
+        List<Pair> queryParams = new ArrayList<Pair>();
+        // header params
+        Map<String, String> headerParams = new HashMap<String, String>();
+        // form params
+        Map<String, String> formParams = new HashMap<String, String>();
+
+
+
+        String[] contentTypes = {
+
+        };
+        String contentType = contentTypes.length > 0 ? contentTypes[0] : "application/json";
+
+
+        String[] authNames = new String[] { };
+
+        try {
+            apiInvoker.invokeAPI(basePath, path, "GET", queryParams, postBody, headerParams, formParams, contentType, authNames, mContext,
+                    new Response.Listener<String>() {
+                        @Override
+                        public void onResponse(String localVarResponse) {
+
+                                responseListener.onResponse(localVarResponse);
+
+                        }
+                    }, new Response.ErrorListener() {
+                        @Override
+                        public void onErrorResponse(VolleyError error) {
+                            errorListener.onErrorResponse(error);
+                        }
+                    });
+        } catch (ApiException ex) {
+            errorListener.onErrorResponse(new VolleyError(ex));
+        }
+    }
+
 }

@@ -89,6 +89,32 @@ public class ParameterDAO {
     }
 
     /**
+     * Ingresar o actualizar las ciudades
+     *
+     * @param values
+     */
+    public void addCity(ContentValues values, SQLiteDatabase db) {
+        Log.i(TAG, "-- start: addCity");
+
+        AppDataHelper mDbHelper = new AppDataHelper(context);
+        long newRowId = 0;
+        try {
+            newRowId = db.replaceOrThrow(
+                    "city",
+                    null,
+                    values);
+            Log.i(TAG, "-- newRowId: " + newRowId);
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        Log.i(TAG, "-- end: addCity");
+    }
+
+    /**
      * Ingresar o actualizar las zonas
      *
      * @param values

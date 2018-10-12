@@ -12,6 +12,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import co.smilers.model.AnswerBooleanScore;
+import co.smilers.model.AnswerGeneralScore;
 import co.smilers.model.AnswerScore;
 import co.smilers.model.Campaign;
 import co.smilers.model.CampaignFooter;
@@ -108,8 +110,9 @@ public class CampaignDAO {
             String currentDateStr = simpleDateFormat.format(currentDate);
             Log.d(TAG, "--currentDateStr: "+currentDateStr);
             // Define 'where' part of query.
-            //String selection = "account_code = ? and start_date <= '" + currentDateStr + "' and end_date >= '" + currentDateStr + "' and is_published = 1"; //Dejar para próxima versión
-            String selection = "account_code = ? and start_date <= '" + currentDateStr + "' and end_date >= '" + currentDateStr + "'";
+            //String selection = "account_code = ?";
+            String selection = "account_code = ? and start_date <= '" + currentDateStr + "' and end_date >= '" + currentDateStr + "' and is_published = 1"; //Dejar para próxima versión
+            //String selection = "account_code = ? and start_date <= '" + currentDateStr + "' and end_date >= '" + currentDateStr + "'";
             // Specify arguments in placeholder order.
             String[] selectionArgs = {accountCode};
             String sortOrder = null;
@@ -236,6 +239,7 @@ public class CampaignDAO {
                     ,"receive_comment"
                     ,"send_sms_notification"
                     ,"account_code"
+                    ,"question_type"
             };
 
             // Define 'where' part of query.
@@ -265,6 +269,7 @@ public class CampaignDAO {
                     object.setReceiveComment("true".equals(cursor.getString(cursor.getColumnIndex("receive_comment"))) ? true : false );
                     object.setSendSmsNotification("true".equals(cursor.getString(cursor.getColumnIndex("send_sms_notification"))) ? true : false );
                     object.setMinScore(cursor.getDouble(cursor.getColumnIndex("min_score")));
+                    object.setQuestionType(cursor.getString(cursor.getColumnIndex("question_type")));
 
                     list.add(object);
                 } while (cursor.moveToNext());
@@ -282,6 +287,76 @@ public class CampaignDAO {
         }
         Log.i(TAG, "-- end: getQuestionItemByCampaign");
         return  list;
+    }
+
+    public QuestionItem getQuestionItemByCode(String accountCode, Long codeQuestionItem){
+        Log.i(TAG, "-- start: getQuestionItemByCode");
+        AppDataHelper mDbHelper = new AppDataHelper(context);
+        SQLiteDatabase db       = null;
+        Cursor cursor           = null;
+        QuestionItem object = new QuestionItem();
+        try {
+            db = mDbHelper.getReadableDatabase();
+
+            String[] projection = {
+                    "code"
+                    ,"title"
+                    ,"description"
+                    ,"design_order"
+                    ,"design_color"
+                    ,"campaign_code"
+                    ,"is_published"
+                    ,"min_score"
+                    ,"receive_comment"
+                    ,"send_sms_notification"
+                    ,"account_code"
+                    ,"question_type"
+            };
+
+            // Define 'where' part of query.
+            String selection = "account_code = ? and code = ?";
+            // Specify arguments in placeholder order.
+            String[] selectionArgs = {accountCode, String.valueOf(codeQuestionItem)};
+            String sortOrder = "design_order";
+            cursor = db.query(
+                    "question_item",  // The table to query
+                    projection,                       // The columns to return
+                    selection,                        // The columns for the WHERE clause
+                    selectionArgs,                    // The values for the WHERE clause
+                    null,                             // don't group the rows
+                    null,                             // don't filter by row groups
+                    sortOrder                         // The sort order
+            );
+
+            if (cursor != null && cursor.moveToFirst()) {
+                do {
+                    object = new QuestionItem();
+                    object.setCode(cursor.getLong(cursor.getColumnIndex("code")));
+                    object.setTitle(cursor.getString(cursor.getColumnIndex("title")));
+                    object.setDescription(cursor.getString(cursor.getColumnIndex("description")));
+                    object.setDesignColor(cursor.getString(cursor.getColumnIndex("design_color")));
+                    object.setDesignOrder(cursor.getInt(cursor.getColumnIndex("design_order")));
+                    object.setIsPublished("true".equals(cursor.getString(cursor.getColumnIndex("is_published"))) ? true : false );
+                    object.setReceiveComment("true".equals(cursor.getString(cursor.getColumnIndex("receive_comment"))) ? true : false );
+                    object.setSendSmsNotification("true".equals(cursor.getString(cursor.getColumnIndex("send_sms_notification"))) ? true : false );
+                    object.setMinScore(cursor.getDouble(cursor.getColumnIndex("min_score")));
+                    object.setQuestionType(cursor.getString(cursor.getColumnIndex("question_type")));
+
+                } while (cursor.moveToNext());
+            }
+
+        } catch (Exception e){
+            Log.e(TAG, "Error: "+e.getMessage());
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+            if (db != null) {
+                db.close();
+            }
+        }
+        Log.i(TAG, "-- end: getQuestionItemByCode");
+        return  object;
     }
 
     public void deleteSmsCellPhone(String account) {
@@ -457,7 +532,8 @@ public class CampaignDAO {
             };
 
             // Define 'where' part of query.
-            String selection = "account_code = ?";
+            //String selection = "account_code = ?";
+            String selection = "account_code = ? and is_published = 1";
             // Specify arguments in placeholder order.
             String[] selectionArgs = {accountCode};
             String sortOrder = "design_order";
@@ -589,6 +665,58 @@ public class CampaignDAO {
         Log.i(TAG, "-- end: addAnswerScore");
     }
 
+    /**
+     * Ingresar o actualizar las respuestas generales
+     *
+     * @param values
+     */
+    public void addAnswerGeneralScore(ContentValues values, SQLiteDatabase db) {
+        Log.i(TAG, "-- start: addAnswerGeneralScore");
+
+        AppDataHelper mDbHelper = new AppDataHelper(context);
+        long newRowId = 0;
+        try {
+            newRowId = db.replaceOrThrow(
+                    "answer_general_score",
+                    null,
+                    values);
+            Log.i(TAG, "-- newRowId: " + newRowId);
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        Log.i(TAG, "-- end: addAnswerGeneralScore");
+    }
+
+    /**
+     * Ingresar o actualizar las respuestas Si no
+     *
+     * @param values
+     */
+    public void addAnswerBooleanScore(ContentValues values, SQLiteDatabase db) {
+        Log.i(TAG, "-- start: addAnswerBooleanScore");
+
+        AppDataHelper mDbHelper = new AppDataHelper(context);
+        long newRowId = 0;
+        try {
+            newRowId = db.replaceOrThrow(
+                    "answer_boolean_score",
+                    null,
+                    values);
+            Log.i(TAG, "-- newRowId: " + newRowId);
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        Log.i(TAG, "-- end: addAnswerBooleanScore");
+    }
+
     public Long getNextIdAnswerScore(String accountCode) {
         Log.i(TAG, "-- start: getNextIdAnswerScore");
         Long id = 0L;
@@ -618,6 +746,70 @@ public class CampaignDAO {
         }
         id = id + 1L;
         Log.i(TAG, "-- end: getNextIdAnswerScore");
+        return id;
+    }
+
+    public Long getNextIdAnswerGeneralScore(String accountCode) {
+        Log.i(TAG, "-- start: getNextIdAnswerGeneralScore");
+        Long id = 0L;
+        SQLiteDatabase db       = null;
+        Cursor cursor = null;
+        try {
+            AppDataHelper mDbHelper = new AppDataHelper(context);
+            db = mDbHelper.getReadableDatabase();
+            String query = "select id from answer_general_score where account_code = '" + accountCode + "'";
+            cursor = db.rawQuery(query, null);
+            if (cursor.moveToFirst()){
+                do{
+                    id = cursor.getLong(cursor.getColumnIndex("id"));
+                }while (cursor.moveToNext());
+            }
+
+            cursor.close();
+        } catch (Exception e) {
+
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+            if (db != null) {
+                db.close();
+            }
+        }
+        id = id + 1L;
+        Log.i(TAG, "-- end: getNextIdAnswerGeneralScore");
+        return id;
+    }
+
+    public Long getNextIdAnswerBooleanScore(String accountCode) {
+        Log.i(TAG, "-- start: getNextIdAnswerBooleanScore");
+        Long id = 0L;
+        SQLiteDatabase db       = null;
+        Cursor cursor = null;
+        try {
+            AppDataHelper mDbHelper = new AppDataHelper(context);
+            db = mDbHelper.getReadableDatabase();
+            String query = "select id from answer_boolean_score where account_code = '" + accountCode + "'";
+            cursor = db.rawQuery(query, null);
+            if (cursor.moveToFirst()){
+                do{
+                    id = cursor.getLong(cursor.getColumnIndex("id"));
+                }while (cursor.moveToNext());
+            }
+
+            cursor.close();
+        } catch (Exception e) {
+
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+            if (db != null) {
+                db.close();
+            }
+        }
+        id = id + 1L;
+        Log.i(TAG, "-- end: getNextIdAnswerBooleanScore");
         return id;
     }
 
@@ -687,8 +879,8 @@ public class CampaignDAO {
                     object.setBad(cursor.getInt(cursor.getColumnIndex("bad")));
                     object.setPoor(cursor.getInt(cursor.getColumnIndex("poor")));
                     object.setScore(cursor.getInt(cursor.getColumnIndex("score")));
-                    QuestionItem questionItem = new QuestionItem();
-                    questionItem.setCode(cursor.getLong(cursor.getColumnIndex("question_item_code")));
+                    QuestionItem questionItem = getQuestionItemByCode(accountCode, cursor.getLong(cursor.getColumnIndex("question_item_code")));
+                    //questionItem.setCode(cursor.getLong(cursor.getColumnIndex("question_item_code")));
                     object.setQuestionItem(questionItem);
 
                     object.setComment(cursor.getString(cursor.getColumnIndex("comment")));
@@ -717,6 +909,189 @@ public class CampaignDAO {
         return  list;
     }
 
+    public List<AnswerGeneralScore> getAnswerGeneralScore(String accountCode){
+        Log.i(TAG, "-- start: getAnswerGeneralScore");
+        List<AnswerGeneralScore> list = new ArrayList<>();
+        AppDataHelper mDbHelper = new AppDataHelper(context);
+        SQLiteDatabase db       = null;
+        Cursor cursor           = null;
+        try {
+            db = mDbHelper.getReadableDatabase();
+
+            String[] projection = {
+                    "id" ,
+                    "headquarter_code" ,
+                    "zone_code" ,
+                    "city_code" ,
+                    "city_name" ,
+                    "registration_date" ,
+                    "excellent" ,
+                    "good" ,
+                    "moderate" ,
+                    "bad" ,
+                    "poor" ,
+                    "score" ,
+                    "meter_device_id" ,
+                    "question_item_code" ,
+                    "comment" ,
+                    "user_id" ,
+                    "account_code"
+            };
+
+            // Define 'where' part of query.
+            String selection = "account_code = ?";
+            // Specify arguments in placeholder order.
+            String[] selectionArgs = {accountCode};
+            String sortOrder = "id";
+            cursor = db.query(
+                    "answer_general_score",  // The table to query
+                    projection,                       // The columns to return
+                    selection,                        // The columns for the WHERE clause
+                    selectionArgs,                    // The values for the WHERE clause
+                    null,                             // don't group the rows
+                    null,                             // don't filter by row groups
+                    sortOrder                         // The sort order
+            );
+            AnswerGeneralScore object = null;
+            if (cursor != null && cursor.moveToFirst()) {
+                do {
+                    object = new AnswerGeneralScore();
+                    object.setId(cursor.getLong(cursor.getColumnIndex("id")));
+                    object.setCityCode(cursor.getLong(cursor.getColumnIndex("city_code")));
+                    Headquarter headquarter = new Headquarter();
+                    headquarter.setCode(cursor.getLong(cursor.getColumnIndex("headquarter_code")));
+                    object.setHeadquarter(headquarter);
+                    Zone zone = new Zone();
+                    zone.setCode(cursor.getLong(cursor.getColumnIndex("zone_code")));
+                    object.setZone(zone);
+
+                    object.setExcellent(cursor.getInt(cursor.getColumnIndex("excellent")));
+                    object.setGood(cursor.getInt(cursor.getColumnIndex("good")));
+                    object.setModerate(cursor.getInt(cursor.getColumnIndex("moderate")));
+                    object.setBad(cursor.getInt(cursor.getColumnIndex("bad")));
+                    object.setPoor(cursor.getInt(cursor.getColumnIndex("poor")));
+                    object.setScore(cursor.getInt(cursor.getColumnIndex("score")));
+                    QuestionItem questionItem = getQuestionItemByCode(accountCode, cursor.getLong(cursor.getColumnIndex("question_item_code")));
+                    //questionItem.setCode(cursor.getLong(cursor.getColumnIndex("question_item_code")));
+                    object.setQuestionItem(questionItem);
+
+                    object.setComment(cursor.getString(cursor.getColumnIndex("comment")));
+                    object.setUserId(cursor.getString(cursor.getColumnIndex("user_id")));
+
+                    String registrationDateStr = cursor.getString(cursor.getColumnIndex("registration_date"));
+                    Log.d(TAG, "--registrationDateStr: "+registrationDateStr);
+                    object.setRegistrationDate(registrationDateStr);
+
+
+                    list.add(object);
+                } while (cursor.moveToNext());
+            }
+
+        } catch (Exception e){
+            Log.e(TAG, "Error: "+e.getMessage());
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+            if (db != null) {
+                db.close();
+            }
+        }
+        Log.i(TAG, "-- end: getAnswerGeneralScore");
+        return  list;
+    }
+
+    public List<AnswerBooleanScore> getAnswerBooleanScore(String accountCode){
+        Log.i(TAG, "-- start: getAnswerBooleanScore");
+        List<AnswerBooleanScore> list = new ArrayList<>();
+        AppDataHelper mDbHelper = new AppDataHelper(context);
+        SQLiteDatabase db       = null;
+        Cursor cursor           = null;
+        try {
+            db = mDbHelper.getReadableDatabase();
+
+            String[] projection = {
+                    "id" ,
+                    "campaign_code" ,
+                    "headquarter_code" ,
+                    "zone_code" ,
+                    "city_code" ,
+                    "city_name" ,
+                    "registration_date" ,
+                    "yes_answer" ,
+                    "no_answer" ,
+                    "score" ,
+                    "meter_device_id" ,
+                    "question_item_code" ,
+                    "comment" ,
+                    "user_id" ,
+                    "account_code"
+            };
+
+            // Define 'where' part of query.
+            String selection = "account_code = ?";
+            // Specify arguments in placeholder order.
+            String[] selectionArgs = {accountCode};
+            String sortOrder = "id";
+            cursor = db.query(
+                    "answer_boolean_score",  // The table to query
+                    projection,                       // The columns to return
+                    selection,                        // The columns for the WHERE clause
+                    selectionArgs,                    // The values for the WHERE clause
+                    null,                             // don't group the rows
+                    null,                             // don't filter by row groups
+                    sortOrder                         // The sort order
+            );
+            AnswerBooleanScore object = null;
+            if (cursor != null && cursor.moveToFirst()) {
+                do {
+                    object = new AnswerBooleanScore();
+                    object.setId(cursor.getLong(cursor.getColumnIndex("id")));
+                    object.setCityCode(cursor.getLong(cursor.getColumnIndex("city_code")));
+                    Headquarter headquarter = new Headquarter();
+                    headquarter.setCode(cursor.getLong(cursor.getColumnIndex("headquarter_code")));
+                    object.setHeadquarter(headquarter);
+                    Zone zone = new Zone();
+                    zone.setCode(cursor.getLong(cursor.getColumnIndex("zone_code")));
+                    object.setZone(zone);
+                    Campaign campaign = new Campaign();
+                    campaign.setCode(cursor.getLong(cursor.getColumnIndex("campaign_code")));
+                    object.setCampaign(campaign);
+
+                    object.setYesAnswer(cursor.getInt(cursor.getColumnIndex("yes_answer")));
+                    object.setNoAnswer(cursor.getInt(cursor.getColumnIndex("no_answer")));
+
+                    object.setScore(cursor.getInt(cursor.getColumnIndex("score")));
+                    QuestionItem questionItem = getQuestionItemByCode(accountCode, cursor.getLong(cursor.getColumnIndex("question_item_code")));
+                    //questionItem.setCode(cursor.getLong(cursor.getColumnIndex("question_item_code")));
+                    object.setQuestionItem(questionItem);
+
+                    object.setComment(cursor.getString(cursor.getColumnIndex("comment")));
+                    object.setUserId(cursor.getString(cursor.getColumnIndex("user_id")));
+
+                    String registrationDateStr = cursor.getString(cursor.getColumnIndex("registration_date"));
+                    Log.d(TAG, "--registrationDateStr: "+registrationDateStr);
+                    object.setRegistrationDate(registrationDateStr);
+
+
+                    list.add(object);
+                } while (cursor.moveToNext());
+            }
+
+        } catch (Exception e){
+            Log.e(TAG, "Error: "+e.getMessage());
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+            if (db != null) {
+                db.close();
+            }
+        }
+        Log.i(TAG, "-- end: getAnswerBooleanScore");
+        return  list;
+    }
+
     public void deleteAnswerScore(String account, String listId) {
         Log.i(TAG, "-- start: deleteAnswerScore");
         SQLiteDatabase db = null;
@@ -736,5 +1111,47 @@ public class CampaignDAO {
         }
 
         Log.i(TAG, "-- end: deleteAnswerScore");
+    }
+
+    public void deleteGeneralAnswerScore(String account, String listId) {
+        Log.i(TAG, "-- start: deleteGeneralAnswerScore");
+        SQLiteDatabase db = null;
+        AppDataHelper mDbHelper = new AppDataHelper(context);
+        long newRowId = 0;
+        try {
+            db = mDbHelper.getReadableDatabase();
+            String where = "account_code = ? and id in (" + listId + ")";
+            String[] arg = {account};
+            newRowId = db.delete("answer_general_score", where, arg);
+            Log.i(TAG, "-- newRowId: " + newRowId);
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        Log.i(TAG, "-- end: deleteGeneralAnswerScore");
+    }
+
+    public void deleteBooleanAnswerScore(String account, String listId) {
+        Log.i(TAG, "-- start: deleteBooleanAnswerScore");
+        SQLiteDatabase db = null;
+        AppDataHelper mDbHelper = new AppDataHelper(context);
+        long newRowId = 0;
+        try {
+            db = mDbHelper.getReadableDatabase();
+            String where = "account_code = ? and id in (" + listId + ")";
+            String[] arg = {account};
+            newRowId = db.delete("answer_boolean_score", where, arg);
+            Log.i(TAG, "-- newRowId: " + newRowId);
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        Log.i(TAG, "-- end: deleteBooleanAnswerScore");
     }
 }

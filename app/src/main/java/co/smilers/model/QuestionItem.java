@@ -39,6 +39,8 @@ public class QuestionItem {
   private Boolean receiveComment = null;
   @SerializedName("sendSmsNotification")
   private Boolean sendSmsNotification = null;
+  @SerializedName("questionType")
+  private String questionType = null;
 
   /**
    * Identificador único de la pregunta
@@ -139,6 +141,17 @@ public class QuestionItem {
     this.sendSmsNotification = sendSmsNotification;
   }
 
+  /**
+   * Tipo de pregunta
+   **/
+  @ApiModelProperty(value = "Tipo de pregunta")
+  public String getQuestionType() {
+    return questionType;
+  }
+  public void setQuestionType(String questionType) {
+    this.questionType = questionType;
+  }
+
 
   @Override
   public boolean equals(Object o) {
@@ -157,7 +170,8 @@ public class QuestionItem {
         (this.minScore == null ? questionItem.minScore == null : this.minScore.equals(questionItem.minScore)) &&
         (this.isPublished == null ? questionItem.isPublished == null : this.isPublished.equals(questionItem.isPublished)) &&
         (this.receiveComment == null ? questionItem.receiveComment == null : this.receiveComment.equals(questionItem.receiveComment)) &&
-        (this.sendSmsNotification == null ? questionItem.sendSmsNotification == null : this.sendSmsNotification.equals(questionItem.sendSmsNotification));
+        (this.sendSmsNotification == null ? questionItem.sendSmsNotification == null : this.sendSmsNotification.equals(questionItem.sendSmsNotification)) &&
+        (this.questionType == null ? questionItem.questionType == null : this.questionType.equals(questionItem.questionType));
   }
 
   @Override
@@ -172,6 +186,7 @@ public class QuestionItem {
     result = 31 * result + (this.isPublished == null ? 0: this.isPublished.hashCode());
     result = 31 * result + (this.receiveComment == null ? 0: this.receiveComment.hashCode());
     result = 31 * result + (this.sendSmsNotification == null ? 0: this.sendSmsNotification.hashCode());
+    result = 31 * result + (this.questionType == null ? 0: this.questionType.hashCode());
     return result;
   }
 
@@ -189,6 +204,7 @@ public class QuestionItem {
     sb.append("  isPublished: ").append(isPublished).append("\n");
     sb.append("  receiveComment: ").append(receiveComment).append("\n");
     sb.append("  sendSmsNotification: ").append(sendSmsNotification).append("\n");
+    sb.append("  questionType: ").append(questionType).append("\n");
     sb.append("}\n");
     return sb.toString();
   }

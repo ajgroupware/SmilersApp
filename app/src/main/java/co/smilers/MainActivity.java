@@ -85,6 +85,17 @@ public class MainActivity extends AppCompatActivity {
     private void syncAll () {
         UserDAO userDAO = new UserDAO(this);
         User loginUser = userDAO.getUserLogin();
+
+        final ProgressDialog progressDialogCity = ProgressDialog.show(this, null, "Sincronizando ciudades...", false);
+        startService(createCallingIntent(loginUser.getAccount().getCode(), SyncIntentService.ACTION_SYNC_CITY,  new SyncIntentServiceReceiver.Listener() {
+            @Override
+            public void onReceiveResult(int resultCode, Bundle resultData) {
+                Log.d(TAG, "--onReceiveResult City");
+
+                progressDialogCity.dismiss();
+            }
+        }));
+
         final ProgressDialog progressDialogHeadquarter = ProgressDialog.show(this, null, "Sincronizando sedes...", false);
         startService(createCallingIntent(loginUser.getAccount().getCode(), SyncIntentService.ACTION_SYNC_HEADQUARTER,  new SyncIntentServiceReceiver.Listener() {
             @Override

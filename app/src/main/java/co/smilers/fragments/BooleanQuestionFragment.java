@@ -16,13 +16,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import co.smilers.R;
 import co.smilers.StartZoneActivity;
+import co.smilers.model.AnswerBooleanScore;
 import co.smilers.model.AnswerScore;
 import co.smilers.model.RequestAssistance;
 import co.smilers.model.SmsCellPhone;
@@ -35,17 +35,16 @@ import co.smilers.services.SyncIntentService;
 import co.smilers.services.SyncIntentServiceReceiver;
 import co.smilers.ui.DialogAssitanceFragment;
 import co.smilers.ui.DialogSuccessAssitanceFragment;
-import co.smilers.utils.ConstantsUtil;
 import co.smilers.utils.SendEmailUtil;
 import co.smilers.utils.SmsUtil;
 
 /**
  * A simple {@link Fragment} subclass.
- * Use the {@link QuestionFragment#newInstance} factory method to
+ * Use the {@link BooleanQuestionFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class QuestionFragment extends Fragment {
-    private static final String TAG = QuestionFragment.class.getSimpleName();
+public class BooleanQuestionFragment extends Fragment {
+    private static final String TAG = BooleanQuestionFragment.class.getSimpleName();
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     public static final String ARG_HEADQUARTER = "headquarter";
@@ -59,15 +58,17 @@ public class QuestionFragment extends Fragment {
     // TODO: Rename and change types of parameters
     private Long campaign;
     private Integer sizeQuestion;
+    private Integer actualQuestion;
     private Integer indexQuestion;
     private Integer indexBooleanQuestion;
-    private Integer actualQuestion;
     private Long headquarter;
     private Long zone;
 
     private boolean cancel = false;
 
-    public QuestionFragment() {
+    private ImageView imageViewGeneralLogo;
+
+    public BooleanQuestionFragment() {
         // Required empty public constructor
     }
 
@@ -75,17 +76,17 @@ public class QuestionFragment extends Fragment {
      * Use this factory method to create a new instance of
      * this fragment using the provided parameters.
      *
-     * @return A new instance of fragment QuestionFragment.
+     * @return A new instance of fragment BooleanQuestionFragment.
      */
     // TODO: Rename and change types and number of parameters
-    public static QuestionFragment newInstance(Long campaign, Integer sizeQuestion, Integer actualQuestion, Integer indexQuestion, Integer indexBooleanQuestion, Long headquarter, Long zone) {
-        QuestionFragment fragment = new QuestionFragment();
+    public static BooleanQuestionFragment newInstance(Long campaign, Integer sizeQuestion, Integer actualQuestion, Integer indexQuestion, Integer indexBooleanQuestion, Long headquarter, Long zone) {
+        BooleanQuestionFragment fragment = new BooleanQuestionFragment();
         Bundle args = new Bundle();
         args.putLong(ARG_CAMPAIGN, campaign);
         args.putInt(ARG_SIZE_QUESTION, sizeQuestion);
+        args.putInt(ARG_ACTUAL_QUESTION, actualQuestion);
         args.putInt(ARG_INDEX_QUESTION, indexQuestion);
         args.putInt(ARG_INDEX_BOOLEAN_QUESTION, indexBooleanQuestion);
-        args.putInt(ARG_ACTUAL_QUESTION, actualQuestion);
         args.putLong(ARG_HEADQUARTER, headquarter);
         args.putLong(ARG_ZONE, zone);
         fragment.setArguments(args);
@@ -98,47 +99,28 @@ public class QuestionFragment extends Fragment {
         if (getArguments() != null) {
             campaign = getArguments().getLong(ARG_CAMPAIGN);
             sizeQuestion = getArguments().getInt(ARG_SIZE_QUESTION);
+            actualQuestion = getArguments().getInt(ARG_ACTUAL_QUESTION);
             indexQuestion = getArguments().getInt(ARG_INDEX_QUESTION);
             indexBooleanQuestion = getArguments().getInt(ARG_INDEX_BOOLEAN_QUESTION);
-            actualQuestion = getArguments().getInt(ARG_ACTUAL_QUESTION);
             headquarter = getArguments().getLong(ARG_HEADQUARTER);
             zone = getArguments().getLong(ARG_ZONE);
         }
-
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                if (!cancel) {
-                    try {
-                        StartZoneActivity.showAlert = false;
-                        if (((StartZoneActivity) getActivity()).navigationController != null) {
-                            ((StartZoneActivity) getActivity()).navigationController.navigateToHeader(headquarter, zone);
-                        }
-                    } catch (Exception e) {
-                        Log.e(TAG, "--Error " + e.getMessage());
-                    }
-                }
-            }
-        }, ConstantsUtil.WAIT_TIME_ANSWER);
     }
-
-    private ImageView imageViewGeneralLogo;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-
         // Inflate the layout for this fragment
-        View view = inflater.inflate(R.layout.fragment_question, container, false);
+        View view = inflater.inflate(R.layout.fragment_boolean_question, container, false);
         imageViewGeneralLogo = (ImageView) view.findViewById(R.id.ImageView_general_logo);
         //Verificar si hay preguntas cargadas
-        if (StartZoneActivity.answerScores != null && StartZoneActivity.answerScores.size() > 0) {
+        if (StartZoneActivity.answerBooleanScores!= null && StartZoneActivity.answerBooleanScores.size() > 0) {
             TextView textviewQuestionNumber = view.findViewById(R.id.textview_question_number);
-            TextView textviewQuestionCount  = view.findViewById(R.id.textview_question_count);
-            TextView textviewDescription    = view.findViewById(R.id.textview_description);
+            TextView textviewQuestionCount = view.findViewById(R.id.textview_question_count);
+            TextView textviewDescription = view.findViewById(R.id.textview_description);
 
 
-            AnswerScore answerScore = StartZoneActivity.answerScores.get(indexQuestion.intValue());
+            AnswerBooleanScore answerScore = StartZoneActivity.answerBooleanScores.get(indexBooleanQuestion.intValue());
             answerScore.setCityCode(answerScore.getHeadquarter().getCity() != null ? answerScore.getHeadquarter().getCity().getCode() : null);
             ConstraintLayout constraintQuestion = view.findViewById(R.id.constraint_question);
 
@@ -150,15 +132,12 @@ public class QuestionFragment extends Fragment {
 
 
             ImageView excellent = view.findViewById(R.id.imageview_excellent);
-            ImageView good = view.findViewById(R.id.imageview_good);
-            ImageView regular = view.findViewById(R.id.imageview_regular);
-            ImageView bad = view.findViewById(R.id.imageview_bad);
-            ImageView appalling = view.findViewById(R.id.imageview_appalling);
+            ImageView bad = view.findViewById(R.id.imageview_appalling);
 
             excellent.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    answerScore.setExcellent(1);
+                    answerScore.setYesAnswer(1);
                     answerScore.setScore(5);
                     if (sizeQuestion.intValue() == actualQuestion.intValue() + 1) {
                         sendAnswer();
@@ -173,85 +152,11 @@ public class QuestionFragment extends Fragment {
                 }
             });
 
-            good.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    answerScore.setGood(1);
-                    answerScore.setScore(4);
-                    if (sizeQuestion.intValue() == actualQuestion.intValue() + 1) {
-                        sendAnswer();
-                        if (StartZoneActivity.showAlert) {
-                            showAlertAssistance();
-                        } else {
-                            showThanks();
-                        }
-                    } else {
-                        showNext();
-                    }
-                }
-            });
-
-            regular.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    StartZoneActivity.showAlert = true;
-                    answerScore.setModerate(1);
-                    answerScore.setScore(3);
-                    if (sizeQuestion.intValue() == actualQuestion.intValue() + 1) {
-                        sendAnswer();
-                        if (StartZoneActivity.showAlert) {
-                            showAlertAssistance();
-                        } else {
-                            showThanks();
-                        }
-                    } else {
-                        showNext();
-                        //Se muestra mensaje al final
-                    /*
-                    if (StartZoneActivity.showAlert) {
-                        showNext();
-                    } else {
-                        StartZoneActivity.showAlert = true;
-                        showAlertAssistance();
-                    }
-                    */
-                    }
-                }
-            });
-
             bad.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
                     StartZoneActivity.showAlert = true;
-                    answerScore.setBad(1);
-                    answerScore.setScore(2);
-                    if (sizeQuestion.intValue() == actualQuestion.intValue() + 1) {
-                        sendAnswer();
-                        if (StartZoneActivity.showAlert) {
-                            showAlertAssistance();
-                        } else {
-                            showThanks();
-                        }
-                    } else {
-                        showNext();
-                        //Se muestra mensaje al final
-                    /*
-                    if (StartZoneActivity.showAlert) {
-                        showNext();
-                    } else {
-                        StartZoneActivity.showAlert = true;
-                        showAlertAssistance();
-                    }
-                    */
-                    }
-                }
-            });
-
-            appalling.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    StartZoneActivity.showAlert = true;
-                    answerScore.setPoor(1);
+                    answerScore.setNoAnswer(1);
                     answerScore.setScore(1);
                     if (sizeQuestion.intValue() == actualQuestion.intValue() + 1) {
                         sendAnswer();
@@ -263,32 +168,20 @@ public class QuestionFragment extends Fragment {
                     } else {
                         showNext();
                         //Se muestra mensaje al final
-                    /*
-                    if (StartZoneActivity.showAlert) {
-                        showNext();
-                    } else {
-                        StartZoneActivity.showAlert = true;
-                        showAlertAssistance();
-                    }
-                    */
-                    }
 
+                    }
                 }
             });
-        } else {
-            //Navegar a la portada
-            showHeader();
 
         }
 
         return view;
     }
 
-
     public void showNext() {
         cancel = true;
         soundTouch();
-        ((StartZoneActivity) getActivity()).navigationController.navigateToQuestion(headquarter, zone, campaign, sizeQuestion, actualQuestion.intValue() + 1, indexQuestion + 1, indexBooleanQuestion);
+        ((StartZoneActivity) getActivity()).navigationController.navigateToQuestion(headquarter, zone, campaign, sizeQuestion, actualQuestion.intValue() + 1, indexQuestion, indexBooleanQuestion + 1);
 
     }
 
@@ -318,6 +211,7 @@ public class QuestionFragment extends Fragment {
                 Log.d(TAG, "--onReceiveResult BooleanAnswer");
             }
         }));
+
     }
 
     private Intent createCallingIntent(String account, String action, SyncIntentServiceReceiver.Listener listener) {

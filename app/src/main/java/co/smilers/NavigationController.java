@@ -3,11 +3,13 @@ package co.smilers;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 
+import co.smilers.fragments.BooleanQuestionFragment;
 import co.smilers.fragments.GeneralHeaderFragment;
 import co.smilers.fragments.GeneralQuestionFragment;
 import co.smilers.fragments.QuestionFragment;
 import co.smilers.fragments.SelectCampaignFragment;
 import co.smilers.fragments.ThanksFragment;
+import co.smilers.model.AnswerScore;
 
 import static co.smilers.StartZoneActivity.HEADER_FRAGMENT_TAG;
 import static co.smilers.StartZoneActivity.QUESTION_FRAGMENT_TAG;
@@ -25,11 +27,21 @@ public class NavigationController {
         this.startZoneActivity = startZoneActivity;
     }
 
-    public void navigateToQuestion(Long headerquarter, Long zone, Long campaignCode, int size, int current) {
+    public void navigateToQuestion(Long headerquarter, Long zone, Long campaignCode, int size, int current, int indexQuestion, int indexBooleanQuestion) {
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        QuestionFragment questionFragment = QuestionFragment.newInstance(campaignCode, size, current, headerquarter, zone);
-        fragmentTransaction.replace(R.id.fullscreen_content, questionFragment, "QUESTION_FRAGMENT");
-        fragmentTransaction.commit();
+
+        String questionType = StartZoneActivity.questionItems.get(current).getQuestionType();
+        if ("CSAT".equals(questionType)) {
+            //AnswerScore answerScore = StartZoneActivity.answerScores.get(indexQuestion);
+            QuestionFragment questionFragment = QuestionFragment.newInstance(campaignCode, size, current, indexQuestion, indexBooleanQuestion, headerquarter, zone);
+            fragmentTransaction.replace(R.id.fullscreen_content, questionFragment, "QUESTION_FRAGMENT");
+            fragmentTransaction.commit();
+        } else if ("BOOLEAN".equals(questionType)) {
+            BooleanQuestionFragment questionFragment = BooleanQuestionFragment.newInstance(campaignCode, size, current, indexQuestion, indexBooleanQuestion, headerquarter, zone);
+            fragmentTransaction.replace(R.id.fullscreen_content, questionFragment, "QUESTION_FRAGMENT");
+            fragmentTransaction.commit();
+        }
+
 
         if (startZoneActivity != null) {
             startZoneActivity.mCurrentFragment = QUESTION_FRAGMENT_TAG;

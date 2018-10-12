@@ -27,6 +27,7 @@ import java.util.Map;
 import co.com.groupware.quantum.api.ApiException;
 import co.com.groupware.quantum.api.ApiInvoker;
 import co.com.groupware.quantum.api.Pair;
+import co.smilers.model.AnswerBooleanScore;
 import co.smilers.model.AnswerGeneralScore;
 import co.smilers.model.AnswerScore;
 import co.smilers.model.RequestAssistance;
@@ -564,6 +565,65 @@ public class CampaignApi {
                         public void onResponse(String localVarResponse) {
 
                                 responseListener.onResponse(localVarResponse);
+
+                        }
+                    }, new Response.ErrorListener() {
+                        @Override
+                        public void onErrorResponse(VolleyError error) {
+                            errorListener.onErrorResponse(error);
+                        }
+                    });
+        } catch (ApiException ex) {
+            errorListener.onErrorResponse(new VolleyError(ex));
+        }
+    }
+
+    /**
+     * Agregar calificaciones SI/NO
+     * Agregar nueva lista de calificaciones SI/NO
+     * @param account Cuenta activa y asociada a la sede   * @param answerBooleanScore Objecto de resultado que será agregado
+     */
+    public void addAnswerBooleanScore (String account, List<AnswerBooleanScore> answerBooleanScore, Context mContext, final Response.Listener<String> responseListener, final Response.ErrorListener errorListener) {
+        Object postBody = answerBooleanScore;
+
+        // verify the required parameter 'account' is set
+        if (account == null) {
+            VolleyError error = new VolleyError("Missing the required parameter 'account' when calling addAnswerBooleanScore",
+                    new ApiException(400, "Missing the required parameter 'account' when calling addAnswerBooleanScore"));
+        }
+        // verify the required parameter 'answerBooleanScore' is set
+        if (answerBooleanScore == null) {
+            VolleyError error = new VolleyError("Missing the required parameter 'answerBooleanScore' when calling addAnswerBooleanScore",
+                    new ApiException(400, "Missing the required parameter 'answerBooleanScore' when calling addAnswerBooleanScore"));
+        }
+
+        // create path and map variables
+        String path = "/campaign/answerBooleanScore/{account}".replaceAll("\\{format\\}","json").replaceAll("\\{" + "account" + "\\}", apiInvoker.escapeString(account.toString()));
+
+        // query params
+        List<Pair> queryParams = new ArrayList<Pair>();
+        // header params
+        Map<String, String> headerParams = new HashMap<String, String>();
+        // form params
+        Map<String, String> formParams = new HashMap<String, String>();
+
+
+
+        String[] contentTypes = {
+                "application/json; charset=utf-8","application/xml; charset=utf-8"
+        };
+        String contentType = contentTypes.length > 0 ? contentTypes[0] : "application/json";
+
+
+        String[] authNames = new String[] { };
+
+        try {
+            apiInvoker.invokeAPI(basePath, path, "POST", queryParams, postBody, headerParams, formParams, contentType, authNames, mContext,
+                    new Response.Listener<String>() {
+                        @Override
+                        public void onResponse(String localVarResponse) {
+
+                            responseListener.onResponse(localVarResponse);
 
                         }
                     }, new Response.ErrorListener() {

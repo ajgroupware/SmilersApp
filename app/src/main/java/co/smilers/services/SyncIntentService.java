@@ -33,6 +33,8 @@ import co.smilers.StartZoneActivity;
 import co.smilers.api.ApiUtil;
 import co.smilers.api.CampaignApi;
 import co.smilers.api.ParameterApi;
+import co.smilers.model.AnswerBooleanScore;
+import co.smilers.model.AnswerGeneralScore;
 import co.smilers.model.AnswerScore;
 import co.smilers.model.Headquarter;
 import co.smilers.model.RequestAssistance;
@@ -58,7 +60,8 @@ public class SyncIntentService extends IntentService {
     public static final String RECEIVER = "co.smilers.services.RECEIVER";
 
     public static final String ACTION_SYNC_ALL              = "co.smilers.services.action.SYNC_ALL";
-    public static final String ACTION_SYNC_HEADQUARTER      = "co.smilers.services.action.SYNC_HEADQUARTER";
+    public static final String ACTION_SYNC_CITY             = "co.smilers.services.action.CITY";
+    public static final String ACTION_SYNC_HEADQUARTER      = "co.smilers.services.action.HEADQUARTER";
     public static final String ACTION_SYNC_ZONE             = "co.smilers.services.action.ZONE";
     public static final String ACTION_SYNC_GENERAL_HEADER   = "co.smilers.services.action.GENERAL_HEADER";
     public static final String ACTION_SYNC_GENERAL_QUESTION = "co.smilers.services.action.GENERAL_QUESTION";
@@ -70,6 +73,7 @@ public class SyncIntentService extends IntentService {
     public static final String ACTION_SYNC_GENERAL_SETTING_PARAMETER     = "co.smilers.services.action.GENERAL_SETTING_PARAMETER ";
 
     public static final String ACTION_SYNC_ANSWER         = "co.smilers.services.action.ANSWER";
+    public static final String ACTION_SYNC_BOOLEAN_ANSWER = "co.smilers.services.action.BOOLEAN_ANSWER";
     public static final String ACTION_SYNC_GENERAL_ANSWER = "co.smilers.services.action.GENERAL_ANSWER";
     public static final String ACTION_SYNC_REQUEST_ASSISTANCE  = "co.smilers.services.action.REQUEST_ASSISTANCE";
 
@@ -136,6 +140,10 @@ public class SyncIntentService extends IntentService {
                 final String account = intent.getStringExtra(ACCOUNT_PARAM);
 
                 handleActionSyncHeadquarter(account, receiver);
+            } else if (ACTION_SYNC_CITY.equals(action)) {
+                final String account = intent.getStringExtra(ACCOUNT_PARAM);
+
+                handleActionSyncCity(account, receiver);
             } else if (ACTION_SYNC_ZONE.equals(action)) {
                 final String account = intent.getStringExtra(ACCOUNT_PARAM);
 
@@ -166,6 +174,11 @@ public class SyncIntentService extends IntentService {
                 final Boolean syncSaved = intent.getBooleanExtra(SYNC_SAVED_PARAM, false);
 
                 handleActionSyncAnswer(account, syncSaved, receiver);
+            } else if (ACTION_SYNC_BOOLEAN_ANSWER.equals(action)) {
+                final String account = intent.getStringExtra(ACCOUNT_PARAM);
+                final Boolean syncSaved = intent.getBooleanExtra(SYNC_SAVED_PARAM, false);
+
+                handleActionSyncBooleanAnswer(account, syncSaved, receiver);
             } else if (ACTION_SYNC_REQUEST_ASSISTANCE.equals(action)) {
                 final String account = intent.getStringExtra(ACCOUNT_PARAM);
                 final Boolean syncSaved = intent.getBooleanExtra(SYNC_SAVED_PARAM, false);
@@ -235,6 +248,62 @@ public class SyncIntentService extends IntentService {
                                     contentValues.put("account_code", account);
 
                                     parameterDAO.addHeadquarter(contentValues, db);
+
+                                }
+                            } else {
+                                Log.i(TAG, "-- sin datos: Headquarter");
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        } finally {
+                            //db.endTransaction();
+                            if (db != null) {
+                                db.close();
+                                db = null;
+                            }
+
+                        }
+
+                        Bundle responseBundle = new Bundle();
+                        responseBundle.putString("RESULT", "OK");
+                        receiver.send(0, responseBundle);
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Log.e(TAG, "-- Error: " + error.getMessage());
+                        Bundle responseBundle = new Bundle();
+                        responseBundle.putString("RESULT", "ERROR");
+                        receiver.send(0, responseBundle);
+                    }
+                });
+    }
+
+    /**
+     * Handle action Baz in the provided background thread with the provided
+     * parameters.
+     */
+    private void handleActionSyncCity(String account, final ResultReceiver receiver) {
+        final ParameterApi parameterApi = new ParameterApi();
+        parameterApi.listCity(getApplicationContext(), new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+
+                        ParameterDAO parameterDAO = new ParameterDAO(getApplicationContext());
+                        AppDataHelper mDbHelper = new AppDataHelper(getApplicationContext());
+                        SQLiteDatabase db = mDbHelper.getWritableDatabase();
+                        try {
+                            JSONArray cityJson  = new JSONArray(response);
+                            //db.beginTransaction();
+                            if (cityJson != null) {
+                                for (int i = 0; i < cityJson.length(); i++) {
+                                    JSONObject objects = cityJson.getJSONObject(i);
+                                    ContentValues contentValues = new ContentValues();
+                                    contentValues.put("code", objects.getString("code"));
+                                    contentValues.put("name", objects.getString("name"));
+
+                                    parameterDAO.addCity(contentValues, db);
 
                                 }
                             } else {
@@ -555,6 +624,7 @@ public class SyncIntentService extends IntentService {
                                             contentValuesItem.put("min_score", objectsItem.getDouble("minScore"));
                                             contentValuesItem.put("is_published", objectsItem.getBoolean("isPublished"));
                                             contentValuesItem.put("receive_comment", objectsItem.getBoolean("receiveComment"));
+                                            contentValuesItem.put("question_type", objectsItem.getString("questionType"));
                                             contentValuesItem.put("send_sms_notification", objectsItem.getBoolean("sendSmsNotification"));
                                             contentValuesItem.put("account_code", account);
                                             contentValuesItem.put("campaign_code", objects.getLong("code"));
@@ -602,7 +672,7 @@ public class SyncIntentService extends IntentService {
      */
     private void handleActionSyncGeneralAnswer(String account, final Boolean isSyncSaved, final ResultReceiver receiver) {
         final CampaignApi campaignApi = new CampaignApi();
-        campaignApi.addAnswerGeneralScore(account, StartZoneActivity.answerGeneralScore, getApplicationContext(), new Response.Listener<String>() {
+        campaignApi.addAnswerGeneralScore(account, isSyncSaved ? StartZoneActivity.savedAnswerGeneralScore : StartZoneActivity.answerGeneralScore, getApplicationContext(), new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {
                         Log.d(TAG, "-- onResponse: " + response);
@@ -612,7 +682,9 @@ public class SyncIntentService extends IntentService {
                         responseBundle.putString("RESULT", "OK");
                         receiver.send(0, responseBundle);
 
-
+                        if (isSyncSaved) { //Eliminar las calificaciones generales enviadas
+                            deleteSavedSyncGeneralAnswer();
+                        }
                     }
                 },
                 new Response.ErrorListener() {
@@ -621,6 +693,10 @@ public class SyncIntentService extends IntentService {
                         Log.e(TAG, "-- Error: " + error.getMessage());
                         Bundle responseBundle = new Bundle();
                         responseBundle.putString("RESULT", "ERROR");
+
+                        if (!isSyncSaved) { //si se envia los que ya están almacenados en la base de datos, no guardar de nuevo
+                            saveNoSyncGeneralAnswer();
+                        }
 
                         receiver.send(0, responseBundle);
 
@@ -647,6 +723,8 @@ public class SyncIntentService extends IntentService {
                         if (isSyncSaved) { //Eliminar las calificaciones enviadas
                             deleteSavedSyncAnswer();
                         }
+
+                        StartZoneActivity.answerScores = new ArrayList<>();
                     }
                 },
                 new Response.ErrorListener() {
@@ -661,7 +739,44 @@ public class SyncIntentService extends IntentService {
                         }
 
                         receiver.send(0, responseBundle);
+                        StartZoneActivity.answerScores = new ArrayList<>();
+                    }
+                });
+    }
 
+    private void handleActionSyncBooleanAnswer(String account, final Boolean isSyncSaved, final ResultReceiver receiver) {
+        final CampaignApi campaignApi = new CampaignApi();
+        campaignApi.addAnswerBooleanScore(account, isSyncSaved ? StartZoneActivity.savedAnswerBooleanScore : StartZoneActivity.answerBooleanScores , getApplicationContext(), new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        Log.d(TAG, "-- onResponse: " + response);
+
+
+                        Bundle responseBundle = new Bundle();
+                        responseBundle.putString("RESULT", "OK");
+                        receiver.send(0, responseBundle);
+
+                        if (isSyncSaved) { //Eliminar las calificaciones enviadas
+                            deleteSavedSyncBooleanAnswer();
+                        }
+
+                        StartZoneActivity.answerBooleanScores = new ArrayList<>();
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Log.e(TAG, "-- Error: " + error.getMessage());
+                        Bundle responseBundle = new Bundle();
+                        responseBundle.putString("RESULT", "ERROR");
+
+                        if (!isSyncSaved) { //si se envia los que ya están almacenados en la base de datos, no guardar de nuevo
+                            saveNoSyncBooleanAnswer();
+                        }
+
+                        receiver.send(0, responseBundle);
+
+                        StartZoneActivity.answerBooleanScores = new ArrayList<>();
                     }
                 });
     }
@@ -750,6 +865,92 @@ public class SyncIntentService extends IntentService {
         }
     }
 
+    private void saveNoSyncGeneralAnswer() {
+        Log.d(TAG, "-- saveNoSyncGeneralAnswer: " + StartZoneActivity.answerGeneralScore.size());
+        SQLiteDatabase db = null;
+        try {
+            UserDAO userDAO = new UserDAO(getApplicationContext());
+            User user = userDAO.getUserLogin();
+            CampaignDAO campaignDAO = new CampaignDAO(getApplicationContext());
+            AppDataHelper mDbHelper = new AppDataHelper(getApplicationContext());
+            db = mDbHelper.getWritableDatabase();
+            Long idNext = campaignDAO.getNextIdAnswerGeneralScore(user.getAccount().getCode());
+            for (AnswerGeneralScore answerScore : StartZoneActivity.answerGeneralScore) {
+                ContentValues contentValues = new ContentValues();
+                contentValues.put("id", idNext);
+                contentValues.put("headquarter_code", answerScore.getHeadquarter().getCode());
+                contentValues.put("zone_code", answerScore.getZone().getCode());
+                contentValues.put("city_code", answerScore.getHeadquarter().getCity().getCode());
+                //contentValues.put("registration_date", 23);
+                contentValues.put("excellent", answerScore.getExcellent());
+                contentValues.put("good", answerScore.getGood());
+                contentValues.put("moderate", answerScore.getModerate());
+                contentValues.put("bad", answerScore.getBad());
+                contentValues.put("poor", answerScore.getPoor());
+                contentValues.put("score", answerScore.getScore());
+                contentValues.put("question_item_code", answerScore.getQuestionItem().getCode());
+                contentValues.put("comment", answerScore.getComment());
+                contentValues.put("user_id", answerScore.getUserId());
+                contentValues.put("account_code", user.getAccount().getCode());
+
+                campaignDAO.addAnswerGeneralScore(contentValues, db);
+                idNext = idNext + 1L;
+            }
+
+        } catch (Exception e) {
+            Log.e(TAG, "-- Error: " + e.getMessage());
+        } finally {
+            //db.endTransaction();
+            if (db != null) {
+                db.close();
+                db = null;
+            }
+
+        }
+    }
+
+    private void saveNoSyncBooleanAnswer() {
+        Log.d(TAG, "-- saveNoSyncBooleanAnswer: " + StartZoneActivity.answerBooleanScores.size());
+        SQLiteDatabase db = null;
+        try {
+            UserDAO userDAO = new UserDAO(getApplicationContext());
+            User user = userDAO.getUserLogin();
+            CampaignDAO campaignDAO = new CampaignDAO(getApplicationContext());
+            AppDataHelper mDbHelper = new AppDataHelper(getApplicationContext());
+            db = mDbHelper.getWritableDatabase();
+            Long idNext = campaignDAO.getNextIdAnswerBooleanScore(user.getAccount().getCode());
+            for (AnswerBooleanScore answerScore : StartZoneActivity.answerBooleanScores) {
+                ContentValues contentValues = new ContentValues();
+                contentValues.put("id", idNext);
+                contentValues.put("campaign_code", answerScore.getCampaign().getCode());
+                contentValues.put("headquarter_code", answerScore.getHeadquarter().getCode());
+                contentValues.put("zone_code", answerScore.getZone().getCode());
+                contentValues.put("city_code", answerScore.getHeadquarter().getCity().getCode());
+                //contentValues.put("registration_date", 23);
+                contentValues.put("yes_answer", answerScore.getYesAnswer());
+                contentValues.put("yes_answer", answerScore.getNoAnswer());
+                contentValues.put("score", answerScore.getScore());
+                contentValues.put("question_item_code", answerScore.getQuestionItem().getCode());
+                contentValues.put("comment", answerScore.getComment());
+                contentValues.put("user_id", answerScore.getUserId());
+                contentValues.put("account_code", user.getAccount().getCode());
+
+                campaignDAO.addAnswerBooleanScore(contentValues, db);
+                idNext = idNext + 1L;
+            }
+
+        } catch (Exception e) {
+            Log.e(TAG, "-- Error: " + e.getMessage());
+        } finally {
+            //db.endTransaction();
+            if (db != null) {
+                db.close();
+                db = null;
+            }
+
+        }
+    }
+
     private void deleteSavedSyncAnswer() {
         try {
             StringBuilder listId = new StringBuilder();
@@ -766,6 +967,50 @@ public class SyncIntentService extends IntentService {
             campaignDAO.deleteAnswerScore(user.getAccount().getCode(), listId.toString());
 
             StartZoneActivity.savedAnswerScores = new ArrayList<>();
+
+        } catch (Exception e) {
+            Log.e(TAG, "-- Error: " + e.getMessage());
+        }
+    }
+
+    private void deleteSavedSyncGeneralAnswer() {
+        try {
+            StringBuilder listId = new StringBuilder();
+            for (AnswerGeneralScore answerScore : StartZoneActivity.savedAnswerGeneralScore) {
+                listId.append(answerScore.getId() + ",");
+            }
+
+            listId.deleteCharAt(listId.length() - 1);
+            Log.d(TAG, "-- listId: " + listId);
+            UserDAO userDAO = new UserDAO(getApplicationContext());
+            User user = userDAO.getUserLogin();
+            CampaignDAO campaignDAO = new CampaignDAO(getApplicationContext());
+
+            campaignDAO.deleteGeneralAnswerScore(user.getAccount().getCode(), listId.toString());
+
+            StartZoneActivity.savedAnswerGeneralScore = new ArrayList<>();
+
+        } catch (Exception e) {
+            Log.e(TAG, "-- Error: " + e.getMessage());
+        }
+    }
+
+    private void deleteSavedSyncBooleanAnswer() {
+        try {
+            StringBuilder listId = new StringBuilder();
+            for (AnswerBooleanScore answerScore : StartZoneActivity.savedAnswerBooleanScore) {
+                listId.append(answerScore.getId() + ",");
+            }
+
+            listId.deleteCharAt(listId.length() - 1);
+            Log.d(TAG, "-- listId: " + listId);
+            UserDAO userDAO = new UserDAO(getApplicationContext());
+            User user = userDAO.getUserLogin();
+            CampaignDAO campaignDAO = new CampaignDAO(getApplicationContext());
+
+            campaignDAO.deleteBooleanAnswerScore(user.getAccount().getCode(), listId.toString());
+
+            StartZoneActivity.savedAnswerBooleanScore = new ArrayList<>();
 
         } catch (Exception e) {
             Log.e(TAG, "-- Error: " + e.getMessage());

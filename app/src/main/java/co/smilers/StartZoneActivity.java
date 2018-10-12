@@ -29,8 +29,10 @@ import co.smilers.fragments.HeadquarterFragment;
 import co.smilers.fragments.QuestionFragment;
 import co.smilers.fragments.SelectCampaignFragment;
 import co.smilers.fragments.ThanksFragment;
+import co.smilers.model.AnswerBooleanScore;
 import co.smilers.model.AnswerGeneralScore;
 import co.smilers.model.AnswerScore;
+import co.smilers.model.QuestionItem;
 import co.smilers.model.RequestAssistance;
 import co.smilers.model.User;
 import co.smilers.model.data.daos.ParameterDAO;
@@ -164,7 +166,9 @@ public class StartZoneActivity extends AppCompatActivity {
 
 
         navigationController = new NavigationController(this);
+        questionItems = new ArrayList<>();
         answerScores = new ArrayList<>();
+        answerBooleanScores = new ArrayList<>();
         answerGeneralScore = new ArrayList<>();
 
         Intent intent = getIntent();
@@ -324,8 +328,12 @@ public class StartZoneActivity extends AppCompatActivity {
     }
 
     public static boolean showAlert = false;
+    public static List<QuestionItem> questionItems;
     public static List<AnswerScore> answerScores;
+    public static List<AnswerBooleanScore> answerBooleanScores;
     public static List<AnswerGeneralScore> answerGeneralScore;
     public static List<AnswerScore> savedAnswerScores;
+    public static List<AnswerGeneralScore> savedAnswerGeneralScore;
+    public static List<AnswerBooleanScore> savedAnswerBooleanScore;
     public static List<RequestAssistance> requestAssistances;
 }

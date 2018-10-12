@@ -1,6 +1,8 @@
 package co.smilers.fragments;
 
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.Fragment;
@@ -10,6 +12,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -18,6 +21,7 @@ import java.util.List;
 
 import co.smilers.R;
 import co.smilers.StartZoneActivity;
+import co.smilers.model.AnswerBooleanScore;
 import co.smilers.model.AnswerScore;
 import co.smilers.model.Campaign;
 import co.smilers.model.GeneralQuestionItem;
@@ -102,6 +106,7 @@ public class SelectCampaignFragment extends Fragment implements View.OnClickList
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_select_campaign, container, false);
+        imageViewGeneralLogo = (ImageView) view.findViewById(R.id.ImageView_general_logo);
 
         linearLayout = (LinearLayout) view.findViewById(R.id.linearLayout);
         textviewDescription = view.findViewById(R.id.textview_description);
@@ -113,6 +118,7 @@ public class SelectCampaignFragment extends Fragment implements View.OnClickList
     public void onResume() {
         Log.d(TAG, "--onResume");
         loadCampaign();
+        loadData();
         super.onResume();
     }
 
@@ -180,27 +186,42 @@ public class SelectCampaignFragment extends Fragment implements View.OnClickList
 
                 Campaign campaign = campaignDAO.getCampaignByCode(loginUser.getAccount().getCode(), list.get(0).getCode());
                 Zone zone_ = parameterDAO.getZoneByCode(loginUser.getAccount().getCode(), zone);
-                List<QuestionItem> questionItems = campaignDAO.getQuestionItemByCampaign(loginUser.getAccount().getCode(), list.get(0).getCode());
+                StartZoneActivity.questionItems = campaignDAO.getQuestionItemByCampaign(loginUser.getAccount().getCode(), list.get(0).getCode());
 
-                for (QuestionItem questionItem : questionItems) {
-                    AnswerScore answerScore = new AnswerScore();
-                    answerScore.setQuestionItem(questionItem);
-                    answerScore.setCampaign(campaign);
-                    answerScore.setHeadquarter(headquarter_);
-                    answerScore.setZone(zone_);
+                for (QuestionItem questionItem : StartZoneActivity.questionItems) {
+                    if ("CSAT".equals(questionItem.getQuestionType())) {
+                        AnswerScore answerScore = new AnswerScore();
+                        answerScore.setQuestionItem(questionItem);
+                        answerScore.setCampaign(campaign);
+                        answerScore.setHeadquarter(headquarter_);
+                        answerScore.setZone(zone_);
 
-                    answerScore.setExcellent(0);
-                    answerScore.setGood(0);
-                    answerScore.setModerate(0);
-                    answerScore.setBad(0);
-                    answerScore.setPoor(0);
-                    answerScore.setScore(0);
+                        answerScore.setExcellent(0);
+                        answerScore.setGood(0);
+                        answerScore.setModerate(0);
+                        answerScore.setBad(0);
+                        answerScore.setPoor(0);
+                        answerScore.setScore(0);
 
 
-                    StartZoneActivity.answerScores.add(answerScore);
+                        StartZoneActivity.answerScores.add(answerScore);
+                    } else if ("BOOLEAN".equals(questionItem.getQuestionType())) { // si es pregunta de SI NO
+                        AnswerBooleanScore  answerScore = new AnswerBooleanScore();
+                        answerScore.setQuestionItem(questionItem);
+                        answerScore.setCampaign(campaign);
+                        answerScore.setHeadquarter(headquarter_);
+                        answerScore.setZone(zone_);
+
+                        answerScore.setYesAnswer(0);
+                        answerScore.setNoAnswer(0);
+                        answerScore.setScore(0);
+
+                        StartZoneActivity.answerBooleanScores.add(answerScore);
+                    }
+
                 }
                 cancel = true;
-                ((StartZoneActivity) getActivity()).navigationController.navigateToQuestion(headquarter, zone, list.get(0).getCode(), questionItems.size(), 0);
+                ((StartZoneActivity) getActivity()).navigationController.navigateToQuestion(headquarter, zone, list.get(0).getCode(), StartZoneActivity.questionItems.size(), 0, 0, 0);
 
             } else {
                 ((AppCompatActivity)getActivity()).finish();
@@ -222,30 +243,66 @@ public class SelectCampaignFragment extends Fragment implements View.OnClickList
             ParameterDAO parameterDAO = new ParameterDAO(getActivity());
             Headquarter headquarter_ = parameterDAO.getHeadquarterByCode(loginUser.getAccount().getCode(), headquarter);
             Zone zone_ = parameterDAO.getZoneByCode(loginUser.getAccount().getCode(), zone);
-            List<QuestionItem> questionItems = campaignDAO.getQuestionItemByCampaign(loginUser.getAccount().getCode(), (long) campaignButton.getId());
+            StartZoneActivity.questionItems = campaignDAO.getQuestionItemByCampaign(loginUser.getAccount().getCode(), (long) campaignButton.getId());
 
-            for (QuestionItem questionItem : questionItems) {
-                AnswerScore answerScore = new AnswerScore();
-                answerScore.setQuestionItem(questionItem);
-                answerScore.setCampaign(campaign);
-                answerScore.setHeadquarter(headquarter_);
-                answerScore.setZone(zone_);
+            for (QuestionItem questionItem : StartZoneActivity.questionItems) {
+                if ("CSAT".equals(questionItem.getQuestionType())) {
+                    AnswerScore answerScore = new AnswerScore();
+                    answerScore.setQuestionItem(questionItem);
+                    answerScore.setCampaign(campaign);
+                    answerScore.setHeadquarter(headquarter_);
+                    answerScore.setZone(zone_);
 
-                answerScore.setExcellent(0);
-                answerScore.setGood(0);
-                answerScore.setModerate(0);
-                answerScore.setBad(0);
-                answerScore.setPoor(0);
-                answerScore.setScore(0);
+                    answerScore.setExcellent(0);
+                    answerScore.setGood(0);
+                    answerScore.setModerate(0);
+                    answerScore.setBad(0);
+                    answerScore.setPoor(0);
+                    answerScore.setScore(0);
 
 
-                StartZoneActivity.answerScores.add(answerScore);
+                    StartZoneActivity.answerScores.add(answerScore);
+                } else if ("BOOLEAN".equals(questionItem.getQuestionType())) { // si es pregunta de SI NO
+                    AnswerBooleanScore  answerScore = new AnswerBooleanScore();
+                    answerScore.setQuestionItem(questionItem);
+                    answerScore.setCampaign(campaign);
+                    answerScore.setHeadquarter(headquarter_);
+                    answerScore.setZone(zone_);
+
+                    answerScore.setYesAnswer(0);
+                    answerScore.setNoAnswer(0);
+                    answerScore.setScore(0);
+
+                    StartZoneActivity.answerBooleanScores.add(answerScore);
+                }
             }
             cancel = true;
-            ((StartZoneActivity) getActivity()).navigationController.navigateToQuestion(headquarter, zone, (long) campaignButton.getId(), questionItems.size(), 0);
+            ((StartZoneActivity) getActivity()).navigationController.navigateToQuestion(headquarter, zone, (long) campaignButton.getId(), StartZoneActivity.questionItems.size(), 0, 0, 0);
 
         } catch (Exception e) {
             Log.e(TAG, "--Error: " + e.getMessage());
         }
+    }
+
+    private ImageView imageViewGeneralLogo;
+
+    private void loadData() {
+        CampaignDAO campaignDAO = new CampaignDAO(getActivity());
+        UserDAO userDAO = new UserDAO(getActivity());
+        User loginUser = userDAO.getUserLogin();
+
+        //Cargar logo
+        ParameterDAO parameterDAO = new ParameterDAO(getActivity());
+        try {
+            byte[] imageData = parameterDAO.getGeneralLogo(loginUser.getAccount().getCode());
+            if (imageData != null && imageData.length > 0) {
+                Log.d(TAG, "--imageData " + imageData.length);
+                Bitmap bitmap = BitmapFactory.decodeByteArray(imageData, 0, imageData.length);
+                imageViewGeneralLogo.setImageBitmap(bitmap);
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "--Error:  " + e.getMessage());
+        }
+
     }
 }

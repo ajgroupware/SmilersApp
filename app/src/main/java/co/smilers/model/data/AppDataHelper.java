@@ -10,7 +10,7 @@ public class AppDataHelper extends SQLiteOpenHelper {
 
     private final static String TAG = AppDataHelper.class.getSimpleName();
     // If you change the database schema, you must increment the database version.
-    public static final int DATABASE_VERSION = 2;
+    public static final int DATABASE_VERSION = 3;
     public static final String DATABASE_NAME = "Smilers.db";
 
     public AppDataHelper(Context context) {
@@ -44,15 +44,16 @@ public class AppDataHelper extends SQLiteOpenHelper {
                 "(" +
                 "    code integer NOT NULL" +
                 ", title varchar" +
-                ",description varchar" +
-                ",design_order integer" +
-                ",design_color varchar" +
-                ",campaign_code integer" +
-                ",is_published boolean" +
-                ",min_score numeric(4,2)" +
-                ",receive_comment boolean" +
-                ",send_sms_notification boolean" +
+                ", description varchar" +
+                ", design_order integer" +
+                ", design_color varchar" +
+                ", campaign_code integer" +
+                ", is_published boolean" +
+                ", min_score numeric(4,2)" +
+                ", receive_comment boolean" +
+                ", send_sms_notification boolean" +
                 ", account_code varchar NOT NULL " +
+                ", question_type varchar" +
                 ",PRIMARY KEY (code, account_code)" +
                 ");");
 
@@ -121,6 +122,48 @@ public class AppDataHelper extends SQLiteOpenHelper {
                 "    moderate integer DEFAULT 0," +
                 "    bad integer DEFAULT 0," +
                 "    poor integer DEFAULT 0," +
+                "    score integer," +
+                "    meter_device_id integer," +
+                "    question_item_code integer," +
+                "    comment varchar," +
+                "    user_id varchar," +
+                " account_code varchar NOT NULL," +
+                "    PRIMARY KEY (id, account_code)" +
+                ");");
+
+        db.execSQL("CREATE TABLE answer_general_score" +
+                "(" +
+                "    id integer NOT NULL," +
+                "    headquarter_code integer," +
+                "    zone_code integer," +
+                "    city_code integer," +
+                "    city_name varchar," +
+                "    registration_date datetime DEFAULT CURRENT_TIMESTAMP," +
+                "    excellent integer DEFAULT 0," +
+                "    good integer DEFAULT 0," +
+                "    moderate integer DEFAULT 0," +
+                "    bad integer DEFAULT 0," +
+                "    poor integer DEFAULT 0," +
+                "    score integer," +
+                "    meter_device_id integer," +
+                "    question_item_code integer," +
+                "    comment varchar," +
+                "    user_id varchar," +
+                " account_code varchar NOT NULL," +
+                "    PRIMARY KEY (id, account_code)" +
+                ");");
+
+        db.execSQL("CREATE TABLE answer_boolean_score" +
+                "(" +
+                "    id integer NOT NULL," +
+                "    campaign_code integer," +
+                "    headquarter_code integer," +
+                "    zone_code integer," +
+                "    city_code integer," +
+                "    city_name varchar," +
+                "    registration_date datetime DEFAULT CURRENT_TIMESTAMP," +
+                "    yes_answer integer DEFAULT 0," +
+                "    no_answer integer DEFAULT 0," +
                 "    score integer," +
                 "    meter_device_id integer," +
                 "    question_item_code integer," +
@@ -241,7 +284,107 @@ public class AppDataHelper extends SQLiteOpenHelper {
 
                     db.execSQL("ALTER TABLE sms_cell_phone ADD COLUMN email varchar;");
 
+                } else if (newVersion == 3) {
+                    Log.i(TAG, "--Upgrade structure DB to version 3");
+
+                    db.execSQL("CREATE TABLE answer_boolean_score" +
+                            "(" +
+                            "    id integer NOT NULL," +
+                            "    campaign_code integer," +
+                            "    headquarter_code integer," +
+                            "    zone_code integer," +
+                            "    city_code integer," +
+                            "    city_name varchar," +
+                            "    registration_date datetime DEFAULT CURRENT_TIMESTAMP," +
+                            "    yes_answer integer DEFAULT 0," +
+                            "    no_answer integer DEFAULT 0," +
+                            "    score integer," +
+                            "    meter_device_id integer," +
+                            "    question_item_code integer," +
+                            "    comment varchar," +
+                            "    user_id varchar," +
+                            " account_code varchar NOT NULL," +
+                            "    PRIMARY KEY (id, account_code)" +
+                            ");");
+
+                    db.execSQL("CREATE TABLE answer_general_score" +
+                            "(" +
+                            "    id integer NOT NULL," +
+                            "    headquarter_code integer," +
+                            "    zone_code integer," +
+                            "    city_code integer," +
+                            "    city_name varchar," +
+                            "    registration_date datetime DEFAULT CURRENT_TIMESTAMP," +
+                            "    excellent integer DEFAULT 0," +
+                            "    good integer DEFAULT 0," +
+                            "    moderate integer DEFAULT 0," +
+                            "    bad integer DEFAULT 0," +
+                            "    poor integer DEFAULT 0," +
+                            "    score integer," +
+                            "    meter_device_id integer," +
+                            "    question_item_code integer," +
+                            "    comment varchar," +
+                            "    user_id varchar," +
+                            " account_code varchar NOT NULL," +
+                            "    PRIMARY KEY (id, account_code)" +
+                            ");");
+
+                    db.execSQL("ALTER TABLE question_item ADD COLUMN question_type varchar;");
+
                 }
+
+                break;
+            case 2:
+                //Se agrega nueva estructura o datos
+                if (newVersion == 3) {
+                    Log.i(TAG, "--Upgrade structure DB to version 3");
+
+                    db.execSQL("CREATE TABLE answer_boolean_score" +
+                            "(" +
+                            "    id integer NOT NULL," +
+                            "    campaign_code integer," +
+                            "    headquarter_code integer," +
+                            "    zone_code integer," +
+                            "    city_code integer," +
+                            "    city_name varchar," +
+                            "    registration_date datetime DEFAULT CURRENT_TIMESTAMP," +
+                            "    yes_answer integer DEFAULT 0," +
+                            "    no_answer integer DEFAULT 0," +
+                            "    score integer," +
+                            "    meter_device_id integer," +
+                            "    question_item_code integer," +
+                            "    comment varchar," +
+                            "    user_id varchar," +
+                            " account_code varchar NOT NULL," +
+                            "    PRIMARY KEY (id, account_code)" +
+                            ");");
+
+                    db.execSQL("CREATE TABLE answer_general_score" +
+                            "(" +
+                            "    id integer NOT NULL," +
+                            "    headquarter_code integer," +
+                            "    zone_code integer," +
+                            "    city_code integer," +
+                            "    city_name varchar," +
+                            "    registration_date datetime DEFAULT CURRENT_TIMESTAMP," +
+                            "    excellent integer DEFAULT 0," +
+                            "    good integer DEFAULT 0," +
+                            "    moderate integer DEFAULT 0," +
+                            "    bad integer DEFAULT 0," +
+                            "    poor integer DEFAULT 0," +
+                            "    score integer," +
+                            "    meter_device_id integer," +
+                            "    question_item_code integer," +
+                            "    comment varchar," +
+                            "    user_id varchar," +
+                            " account_code varchar NOT NULL," +
+                            "    PRIMARY KEY (id, account_code)" +
+                            ");");
+
+                    db.execSQL("ALTER TABLE question_item ADD COLUMN question_type varchar;");
+
+                }
+
                 break;
         }
 
