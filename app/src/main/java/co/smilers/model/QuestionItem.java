@@ -23,6 +23,8 @@ public class QuestionItem {
   
   @SerializedName("code")
   private Long code = null;
+  @SerializedName("campaignCode")
+  private Long campaignCode = null;
   @SerializedName("title")
   private String title = null;
   @SerializedName("description")
@@ -51,6 +53,17 @@ public class QuestionItem {
   }
   public void setCode(Long code) {
     this.code = code;
+  }
+
+  /**
+   * Campaña
+   **/
+  @ApiModelProperty(value = "Campaña")
+  public Long getCampaignCode() {
+    return campaignCode;
+  }
+  public void setCampaignCode(Long campaignCode) {
+    this.campaignCode = campaignCode;
   }
 
   /**
@@ -163,6 +176,7 @@ public class QuestionItem {
     }
     QuestionItem questionItem = (QuestionItem) o;
     return (this.code == null ? questionItem.code == null : this.code.equals(questionItem.code)) &&
+        (this.campaignCode == null ? questionItem.campaignCode == null : this.campaignCode.equals(questionItem.campaignCode)) &&
         (this.title == null ? questionItem.title == null : this.title.equals(questionItem.title)) &&
         (this.description == null ? questionItem.description == null : this.description.equals(questionItem.description)) &&
         (this.designOrder == null ? questionItem.designOrder == null : this.designOrder.equals(questionItem.designOrder)) &&
@@ -178,6 +192,7 @@ public class QuestionItem {
   public int hashCode() {
     int result = 17;
     result = 31 * result + (this.code == null ? 0: this.code.hashCode());
+    result = 31 * result + (this.campaignCode == null ? 0: this.campaignCode.hashCode());
     result = 31 * result + (this.title == null ? 0: this.title.hashCode());
     result = 31 * result + (this.description == null ? 0: this.description.hashCode());
     result = 31 * result + (this.designOrder == null ? 0: this.designOrder.hashCode());
@@ -196,6 +211,7 @@ public class QuestionItem {
     sb.append("class QuestionItem {\n");
     
     sb.append("  code: ").append(code).append("\n");
+    sb.append("  campaignCode: ").append(campaignCode).append("\n");
     sb.append("  title: ").append(title).append("\n");
     sb.append("  description: ").append(description).append("\n");
     sb.append("  designOrder: ").append(designOrder).append("\n");

@@ -181,7 +181,6 @@ public class StartZoneActivity extends AppCompatActivity {
             getSupportFragmentManager().beginTransaction().replace(R.id.fullscreen_content, generalHeaderFragment).commit();
         }
 
-
         //Temporalmente
         //Suscribir la aplicación al FCM topic
         FirebaseMessaging.getInstance().subscribeToTopic("smilersConfig");

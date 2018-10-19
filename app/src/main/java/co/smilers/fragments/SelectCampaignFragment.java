@@ -129,6 +129,9 @@ public class SelectCampaignFragment extends Fragment implements View.OnClickList
         ParameterDAO parameterDAO = new ParameterDAO(getActivity());
         Headquarter headquarter_ = parameterDAO.getHeadquarterByCode(loginUser.getAccount().getCode(), headquarter);
         textviewDescription.setText("¿Cuál de estas secciones de tu " + headquarter_.getName() + " quieres evaluar?");
+        if ("velez_6".equals(loginUser.getAccount().getCode())) { // Solo para veles
+            textviewDescription.setText("¿Cuál de estas secciones quieres evaluar?");
+        }
         List<Campaign> list = campaignDAO.getCampaign(loginUser.getAccount().getCode());
         //LayoutInflater inflater = LayoutInflater.from(getActivity());
         if (list != null) {

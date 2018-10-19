@@ -14,8 +14,8 @@ android {
         applicationId "co.smilers"
         minSdkVersion rootProject.minSdkVersion
         targetSdkVersion rootProject.targetSdkVersion
-        versionCode 7
-        versionName '1.0.07'
+        versionCode 9
+        versionName '1.0.09'
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
         signingConfig signingConfigs.Release

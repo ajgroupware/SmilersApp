@@ -4,12 +4,14 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 
 import co.smilers.fragments.BooleanQuestionFragment;
+import co.smilers.fragments.FooterBooleanQuestionFragment;
 import co.smilers.fragments.GeneralHeaderFragment;
 import co.smilers.fragments.GeneralQuestionFragment;
 import co.smilers.fragments.QuestionFragment;
 import co.smilers.fragments.SelectCampaignFragment;
 import co.smilers.fragments.ThanksFragment;
 import co.smilers.model.AnswerScore;
+import co.smilers.model.QuestionItem;
 
 import static co.smilers.StartZoneActivity.HEADER_FRAGMENT_TAG;
 import static co.smilers.StartZoneActivity.QUESTION_FRAGMENT_TAG;
@@ -91,5 +93,22 @@ public class NavigationController {
             startZoneActivity.mCurrentFragment = SELECT_FRAGMENT_TAG;
         }
 
+    }
+
+    public void navigateToFooterQuestion(QuestionItem questionItem, Long headerquarter, Long zone) {
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+
+        if ("CSAT".equals(questionItem.getQuestionType())) {
+
+        } else if ("BOOLEAN".equals(questionItem.getQuestionType())) {
+            FooterBooleanQuestionFragment questionFragment = FooterBooleanQuestionFragment.newInstance(questionItem.getCampaignCode(), headerquarter, zone);
+            fragmentTransaction.replace(R.id.fullscreen_content, questionFragment, "QUESTION_FRAGMENT");
+            fragmentTransaction.commit();
+        }
+
+
+        if (startZoneActivity != null) {
+            startZoneActivity.mCurrentFragment = QUESTION_FRAGMENT_TAG;
+        }
     }
 }

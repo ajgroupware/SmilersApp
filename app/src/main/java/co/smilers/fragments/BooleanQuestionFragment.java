@@ -24,6 +24,7 @@ import co.smilers.R;
 import co.smilers.StartZoneActivity;
 import co.smilers.model.AnswerBooleanScore;
 import co.smilers.model.AnswerScore;
+import co.smilers.model.QuestionItem;
 import co.smilers.model.RequestAssistance;
 import co.smilers.model.SmsCellPhone;
 import co.smilers.model.User;
@@ -35,6 +36,7 @@ import co.smilers.services.SyncIntentService;
 import co.smilers.services.SyncIntentServiceReceiver;
 import co.smilers.ui.DialogAssitanceFragment;
 import co.smilers.ui.DialogSuccessAssitanceFragment;
+import co.smilers.utils.ConstantsUtil;
 import co.smilers.utils.SendEmailUtil;
 import co.smilers.utils.SmsUtil;
 
@@ -105,6 +107,22 @@ public class BooleanQuestionFragment extends Fragment {
             headquarter = getArguments().getLong(ARG_HEADQUARTER);
             zone = getArguments().getLong(ARG_ZONE);
         }
+
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (!cancel) {
+                    try {
+                        StartZoneActivity.showAlert = false;
+                        if (((StartZoneActivity) getActivity()).navigationController != null) {
+                            ((StartZoneActivity) getActivity()).navigationController.navigateToHeader(headquarter, zone);
+                        }
+                    } catch (Exception e) {
+                        Log.e(TAG, "--Error " + e.getMessage());
+                    }
+                }
+            }
+        }, ConstantsUtil.WAIT_TIME_ANSWER);
     }
 
     @Override
@@ -144,7 +162,7 @@ public class BooleanQuestionFragment extends Fragment {
                         if (StartZoneActivity.showAlert) {
                             showAlertAssistance();
                         } else {
-                            showThanks();
+                            endQuestion();
                         }
                     } else {
                         showNext();
@@ -163,7 +181,7 @@ public class BooleanQuestionFragment extends Fragment {
                         if (StartZoneActivity.showAlert) {
                             showAlertAssistance();
                         } else {
-                            showThanks();
+                            endQuestion();
                         }
                     } else {
                         showNext();
@@ -187,6 +205,20 @@ public class BooleanQuestionFragment extends Fragment {
 
     public void showThanks() {
         ((StartZoneActivity) getActivity()).navigationController.navigateToThanks(headquarter, zone);
+    }
+
+    public void endQuestion() {
+        //Verificar si hay preguntas de finalización
+        CampaignDAO campaignDAO = new CampaignDAO(getActivity());
+        UserDAO userDAO = new UserDAO(getActivity());
+        User loginUser = userDAO.getUserLogin();
+        List<QuestionItem> questionItems = campaignDAO.getFooterQuestionItem(loginUser.getAccount().getCode());
+        if (questionItems != null && questionItems.size() > 0) {
+            ((StartZoneActivity) getActivity()).navigationController.navigateToFooterQuestion(questionItems.get(0), headquarter, zone);
+        } else {
+            showThanks();
+        }
+
     }
 
     public void showHeader() {
@@ -249,13 +281,13 @@ public class BooleanQuestionFragment extends Fragment {
 
                 @Override
                 public void onCancelClick(DialogAssitanceFragment dialogFragment) {
-                    showThanks();
+                    endQuestion();
                 }
             });
             dialogFragment.show(getFragmentManager(), DialogAssitanceFragment.TAG);
         } else {
             sendAlert();
-            showThanks();
+            endQuestion();
         }
 
     }
@@ -281,7 +313,7 @@ public class BooleanQuestionFragment extends Fragment {
 
                 try {
                     dialogFragment.closeDialog();
-                    showThanks();
+                    endQuestion();
                 } catch (Exception e) {
                     Log.e(TAG, "--Error: " + e.getMessage());
                 }

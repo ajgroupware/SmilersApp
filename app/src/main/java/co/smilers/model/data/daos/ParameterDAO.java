@@ -510,6 +510,32 @@ public class ParameterDAO {
         Log.i(TAG, "-- end: addGeneralQuestion");
     }
 
+    /**
+     * Ingresar o actualizar las sedes
+     *
+     * @param values
+     */
+    public void addFooterQuestion(ContentValues values, SQLiteDatabase db) {
+        Log.i(TAG, "-- start: addFooterQuestion");
+
+        AppDataHelper mDbHelper = new AppDataHelper(context);
+        long newRowId = 0;
+        try {
+            newRowId = db.replaceOrThrow(
+                    "footer_question_item",
+                    null,
+                    values);
+            Log.i(TAG, "-- newRowId: " + newRowId);
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        Log.i(TAG, "-- end: addFooterQuestion");
+    }
+
     public List<SmsCellPhone> getSmsCellPhone(String accountCode, Long codeHeadquarter){
         Log.i(TAG, "-- start: getSmsCellPhone");
         List<SmsCellPhone> list = new ArrayList<>();

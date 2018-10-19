@@ -1,7 +1,9 @@
 package co.smilers.fragments;
 
 
+import android.content.ContentValues;
 import android.content.Intent;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -18,11 +20,15 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+
 import java.util.ArrayList;
 import java.util.List;
 
 import co.smilers.R;
 import co.smilers.StartZoneActivity;
+import co.smilers.api.CampaignApi;
 import co.smilers.model.AnswerGeneralScore;
 import co.smilers.model.AnswerScore;
 import co.smilers.model.Campaign;
@@ -33,6 +39,7 @@ import co.smilers.model.RequestAssistance;
 import co.smilers.model.SmsCellPhone;
 import co.smilers.model.User;
 import co.smilers.model.Zone;
+import co.smilers.model.data.AppDataHelper;
 import co.smilers.model.data.daos.CampaignDAO;
 import co.smilers.model.data.daos.ParameterDAO;
 import co.smilers.model.data.daos.UserDAO;
@@ -278,7 +285,7 @@ public class GeneralQuestionFragment extends Fragment {
         }
 
     }
-
+    List<AnswerScore> answerScores = new ArrayList<>();
     private void sendAnswer() {
         UserDAO userDAO = new UserDAO(getActivity());
         User loginUser = userDAO.getUserLogin();
@@ -288,6 +295,44 @@ public class GeneralQuestionFragment extends Fragment {
                 Log.d(TAG, "--onReceiveResult Answer");
             }
         }));
+
+        try { // Enviar preguntas generales a la tabla answer_score
+            answerScores = new ArrayList<>();
+            AnswerScore answerScore = new AnswerScore();
+            answerScore.setCityCode(StartZoneActivity.answerGeneralScore.get(0).getCityCode());
+            answerScore.setHeadquarter(StartZoneActivity.answerGeneralScore.get(0).getHeadquarter());
+            answerScore.setZone(StartZoneActivity.answerGeneralScore.get(0).getZone());
+            answerScore.setScore(StartZoneActivity.answerGeneralScore.get(0).getScore());
+            answerScore.setExcellent(StartZoneActivity.answerGeneralScore.get(0).getExcellent());
+            answerScore.setGood(StartZoneActivity.answerGeneralScore.get(0).getGood());
+            answerScore.setModerate(StartZoneActivity.answerGeneralScore.get(0).getModerate());
+            answerScore.setBad(StartZoneActivity.answerGeneralScore.get(0).getBad());
+            answerScore.setPoor(StartZoneActivity.answerGeneralScore.get(0).getPoor());
+            answerScore.setQuestionItem(StartZoneActivity.answerGeneralScore.get(0).getQuestionItem());
+            Campaign campaign = new Campaign();
+            campaign.setCode(StartZoneActivity.answerGeneralScore.get(0).getQuestionItem().getCampaignCode());
+            answerScore.setCampaign(campaign);
+            answerScores.add(answerScore);
+            final CampaignApi campaignApi = new CampaignApi();
+            campaignApi.addAnswerScore(loginUser.getAccount().getCode(), answerScores  , getActivity(), new Response.Listener<String>() {
+                        @Override
+                        public void onResponse(String response) {
+                            Log.d(TAG, "-- onResponse: " + response);
+
+                        }
+                    },
+                    new Response.ErrorListener() {
+                        @Override
+                        public void onErrorResponse(VolleyError error) {
+                            Log.e(TAG, "-- Error: " + error.getMessage());
+
+                            saveNoSyncAnswer();
+
+                        }
+                    });
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private Intent createCallingIntent(String account, String action, SyncIntentServiceReceiver.Listener listener) {
@@ -408,10 +453,12 @@ public class GeneralQuestionFragment extends Fragment {
 
                 //llenar respuesta
                 AnswerGeneralScore answerScore = new AnswerGeneralScore();
-                QuestionItem questionItem = new QuestionItem();
-                questionItem.setCode(generalQuestionItem.getCode());
+                //QuestionItem questionItem = new QuestionItem();
+                //questionItem.setCode(generalQuestionItem.getCode());
+                QuestionItem questionItem = campaignDAO.getQuestionItemByCode(loginUser.getAccount().getCode(), generalQuestionItem.getCode());
                 answerScore.setQuestionItem(questionItem);
                 answerScore.setHeadquarter(headquarter_);
+                answerScore.setCityCode(headquarter_.getCity().getCode());
                 answerScore.setZone(zone_);
 
                 answerScore.setExcellent(0);
@@ -469,6 +516,50 @@ public class GeneralQuestionFragment extends Fragment {
         }
     }
 
+    private void saveNoSyncAnswer() {
+        Log.d(TAG, "-- saveNoSyncAnswer: " + answerScores.size());
+        SQLiteDatabase db = null;
+        try {
+            UserDAO userDAO = new UserDAO(getActivity());
+            User user = userDAO.getUserLogin();
+            CampaignDAO campaignDAO = new CampaignDAO(getActivity());
+            AppDataHelper mDbHelper = new AppDataHelper(getActivity());
+            db = mDbHelper.getWritableDatabase();
+            Long idNext = campaignDAO.getNextIdAnswerScore(user.getAccount().getCode());
+            for (AnswerScore answerScore : answerScores) {
+                ContentValues contentValues = new ContentValues();
+                contentValues.put("id", idNext);
+                contentValues.put("campaign_code", answerScore.getCampaign().getCode());
+                contentValues.put("headquarter_code", answerScore.getHeadquarter().getCode());
+                contentValues.put("zone_code", answerScore.getZone().getCode());
+                contentValues.put("city_code", answerScore.getHeadquarter().getCity().getCode());
+                //contentValues.put("registration_date", 23);
+                contentValues.put("excellent", answerScore.getExcellent());
+                contentValues.put("good", answerScore.getGood());
+                contentValues.put("moderate", answerScore.getModerate());
+                contentValues.put("bad", answerScore.getBad());
+                contentValues.put("poor", answerScore.getPoor());
+                contentValues.put("score", answerScore.getScore());
+                contentValues.put("question_item_code", answerScore.getQuestionItem().getCode());
+                contentValues.put("comment", answerScore.getComment());
+                contentValues.put("user_id", answerScore.getUserId());
+                contentValues.put("account_code", user.getAccount().getCode());
+
+                campaignDAO.addAnswerScore(contentValues, db);
+                idNext = idNext + 1L;
+            }
+
+        } catch (Exception e) {
+            Log.e(TAG, "-- Error: " + e.getMessage());
+        } finally {
+            //db.endTransaction();
+            if (db != null) {
+                db.close();
+                db = null;
+            }
+
+        }
+    }
 
 
 }

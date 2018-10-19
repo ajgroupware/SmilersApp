@@ -289,6 +289,113 @@ public class CampaignDAO {
         return  list;
     }
 
+    public List<QuestionItem> getFooterQuestionItem(String accountCode){
+        Log.i(TAG, "-- start: getFooterQuestionItem");
+        List<QuestionItem> list = new ArrayList<>();
+        AppDataHelper mDbHelper = new AppDataHelper(context);
+        SQLiteDatabase db       = null;
+        Cursor cursor           = null;
+        try {
+            db = mDbHelper.getReadableDatabase();
+
+            String[] projection = {
+                    "code"
+                    ,"title"
+                    ,"description"
+                    ,"design_order"
+                    ,"design_color"
+                    ,"campaign_code"
+                    ,"is_published"
+                    ,"min_score"
+                    ,"receive_comment"
+                    ,"send_sms_notification"
+                    ,"account_code"
+                    ,"question_type"
+            };
+
+            // Define 'where' part of query.
+            String selection = "account_code = ?";
+            // Specify arguments in placeholder order.
+            String[] selectionArgs = {accountCode};
+            String sortOrder = "design_order";
+            cursor = db.query(
+                    "footer_question_item",  // The table to query
+                    projection,                       // The columns to return
+                    selection,                        // The columns for the WHERE clause
+                    selectionArgs,                    // The values for the WHERE clause
+                    null,                             // don't group the rows
+                    null,                             // don't filter by row groups
+                    sortOrder                         // The sort order
+            );
+            QuestionItem object = null;
+            if (cursor != null && cursor.moveToFirst()) {
+                do {
+                    object = new QuestionItem();
+                    object.setCode(cursor.getLong(cursor.getColumnIndex("code")));
+                    object.setCampaignCode(cursor.getLong(cursor.getColumnIndex("campaign_code")));
+                    object.setTitle(cursor.getString(cursor.getColumnIndex("title")));
+                    object.setDescription(cursor.getString(cursor.getColumnIndex("description")));
+                    object.setDesignColor(cursor.getString(cursor.getColumnIndex("design_color")));
+                    object.setDesignOrder(cursor.getInt(cursor.getColumnIndex("design_order")));
+                    object.setIsPublished("true".equals(cursor.getString(cursor.getColumnIndex("is_published"))) ? true : false );
+                    object.setReceiveComment("true".equals(cursor.getString(cursor.getColumnIndex("receive_comment"))) ? true : false );
+                    object.setSendSmsNotification("true".equals(cursor.getString(cursor.getColumnIndex("send_sms_notification"))) ? true : false );
+                    object.setMinScore(cursor.getDouble(cursor.getColumnIndex("min_score")));
+                    object.setQuestionType(cursor.getString(cursor.getColumnIndex("question_type")));
+
+                    list.add(object);
+                } while (cursor.moveToNext());
+            }
+
+        } catch (Exception e){
+            Log.e(TAG, "Error: "+e.getMessage());
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+            if (db != null) {
+                db.close();
+            }
+        }
+        Log.i(TAG, "-- end: getFooterQuestionItem");
+        return  list;
+    }
+
+    public boolean isFooterQuestion(String accountCode) {
+        boolean isFooterQuestion = false;
+        SQLiteDatabase db       = null;
+        Cursor cursor = null;
+        try {
+            AppDataHelper mDbHelper = new AppDataHelper(context);
+            db = mDbHelper.getReadableDatabase();
+            String query = "select count(*) result from footer_question_item where account_code = '" + accountCode + "'";
+            cursor = db.rawQuery(query, null);
+            if (cursor.moveToFirst()){
+                do {
+                    Long result = cursor.getLong(1);
+                    if (result.longValue() > 0L) {
+                        isFooterQuestion = true;
+                    }
+
+                } while (cursor.moveToNext());
+            }
+
+            cursor.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+            if (db != null) {
+                db.close();
+            }
+        }
+
+
+        return isFooterQuestion;
+    }
+
     public QuestionItem getQuestionItemByCode(String accountCode, Long codeQuestionItem){
         Log.i(TAG, "-- start: getQuestionItemByCode");
         AppDataHelper mDbHelper = new AppDataHelper(context);
@@ -311,6 +418,7 @@ public class CampaignDAO {
                     ,"send_sms_notification"
                     ,"account_code"
                     ,"question_type"
+                    ,"campaign_code"
             };
 
             // Define 'where' part of query.
@@ -332,6 +440,7 @@ public class CampaignDAO {
                 do {
                     object = new QuestionItem();
                     object.setCode(cursor.getLong(cursor.getColumnIndex("code")));
+                    object.setCampaignCode(cursor.getLong(cursor.getColumnIndex("campaign_code")));
                     object.setTitle(cursor.getString(cursor.getColumnIndex("title")));
                     object.setDescription(cursor.getString(cursor.getColumnIndex("description")));
                     object.setDesignColor(cursor.getString(cursor.getColumnIndex("design_color")));

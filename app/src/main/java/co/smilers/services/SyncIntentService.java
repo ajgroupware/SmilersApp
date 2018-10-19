@@ -65,6 +65,7 @@ public class SyncIntentService extends IntentService {
     public static final String ACTION_SYNC_ZONE             = "co.smilers.services.action.ZONE";
     public static final String ACTION_SYNC_GENERAL_HEADER   = "co.smilers.services.action.GENERAL_HEADER";
     public static final String ACTION_SYNC_GENERAL_QUESTION = "co.smilers.services.action.GENERAL_QUESTION";
+    public static final String ACTION_SYNC_FOOTER_QUESTION = "co.smilers.services.action.FOOTER_QUESTION";
     public static final String ACTION_SYNC_CAMPAIGN         = "co.smilers.services.action.CAMPAIGN";
     public static final String ACTION_SYNC_CAMPAIGN_FOOTER  = "co.smilers.services.action.CAMPAIGN_FOOTER";
     public static final String ACTION_SYNC_TARGET_ZONE      = "co.smilers.services.action.TARGET_ZONE";
@@ -164,6 +165,10 @@ public class SyncIntentService extends IntentService {
                 final String account = intent.getStringExtra(ACCOUNT_PARAM);
 
                 handleActionSyncGeneralQuestion(account, receiver);
+            } else if (ACTION_SYNC_FOOTER_QUESTION.equals(action)) {
+                final String account = intent.getStringExtra(ACCOUNT_PARAM);
+
+                handleActionSyncFooterQuestion(account, receiver);
             } else if (ACTION_SYNC_GENERAL_ANSWER.equals(action)) {
                 final String account = intent.getStringExtra(ACCOUNT_PARAM);
                 final Boolean syncSaved = intent.getBooleanExtra(SYNC_SAVED_PARAM, false);
@@ -553,6 +558,72 @@ public class SyncIntentService extends IntentService {
                                 }
                             } else {
                                 Log.e(TAG, "-- sin datos: GeneralQuestion");
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        } finally {
+                            //db.endTransaction();
+                            if (db != null) {
+                                db.close();
+                                db = null;
+                            }
+
+                        }
+
+                        Bundle responseBundle = new Bundle();
+                        responseBundle.putString("RESULT", "OK");
+                        receiver.send(0, responseBundle);
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Log.e(TAG, "-- Error: " + error.getMessage());
+                        Bundle responseBundle = new Bundle();
+                        responseBundle.putString("RESULT", "ERROR");
+                        receiver.send(0, responseBundle);
+                    }
+                });
+    }
+
+    /**
+     * Handle action Baz in the provided background thread with the provided
+     * parameters.
+     */
+    private void handleActionSyncFooterQuestion(String account, final ResultReceiver receiver) {
+        final CampaignApi campaignApi = new CampaignApi();
+        campaignApi.listFooterQuestion(account, null, null, null, null,  getApplicationContext(),  new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+
+                        ParameterDAO parameterDAO = new ParameterDAO(getApplicationContext());
+                        AppDataHelper mDbHelper = new AppDataHelper(getApplicationContext());
+                        SQLiteDatabase db = mDbHelper.getWritableDatabase();
+                        try {
+                            JSONArray zoneJson  = new JSONArray(response);
+                            //db.beginTransaction();
+                            if (zoneJson != null) {
+                                for (int i = 0; i < zoneJson.length(); i++) {
+                                    JSONObject objects = zoneJson.getJSONObject(i);
+                                    ContentValues contentValues = new ContentValues();
+                                    contentValues.put("code", objects.getLong("code"));
+                                    contentValues.put("campaign_code", objects.getLong("campaignCode"));
+                                    contentValues.put("title", objects.getString("title"));
+                                    contentValues.put("description", objects.getString("description"));
+                                    contentValues.put("design_order", objects.getInt("designOrder"));
+                                    contentValues.put("design_color", objects.getString("designColor"));
+                                    contentValues.put("min_score", objects.getDouble("minScore"));
+                                    contentValues.put("is_published", objects.getBoolean("isPublished"));
+                                    contentValues.put("receive_comment", objects.getBoolean("receiveComment"));
+                                    contentValues.put("send_sms_notification", objects.getBoolean("sendSmsNotification"));
+                                    contentValues.put("question_type", objects.getString("questionType"));
+                                    contentValues.put("account_code", account);
+
+                                    parameterDAO.addFooterQuestion(contentValues, db);
+
+                                }
+                            } else {
+                                Log.e(TAG, "-- sin datos: FooterQuestion");
                             }
                         } catch (Exception e) {
                             e.printStackTrace();

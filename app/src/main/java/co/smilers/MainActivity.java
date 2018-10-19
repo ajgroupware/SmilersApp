@@ -140,8 +140,17 @@ public class MainActivity extends AppCompatActivity {
         startService(createCallingIntent(loginUser.getAccount().getCode(), SyncIntentService.ACTION_SYNC_GENERAL_QUESTION,  new SyncIntentServiceReceiver.Listener() {
             @Override
             public void onReceiveResult(int resultCode, Bundle resultData) {
-                Log.d(TAG, "--onReceiveResult GeneralHeader");
+                Log.d(TAG, "--onReceiveResult GeneralQuestion");
                 progressDialogGeneralQuestion.dismiss();
+            }
+        }));
+
+        final ProgressDialog progressDialogFooterQuestion = ProgressDialog.show(this, null, "Sincronizando campañas...", false);
+        startService(createCallingIntent(loginUser.getAccount().getCode(), SyncIntentService.ACTION_SYNC_FOOTER_QUESTION,  new SyncIntentServiceReceiver.Listener() {
+            @Override
+            public void onReceiveResult(int resultCode, Bundle resultData) {
+                Log.d(TAG, "--onReceiveResult FooterQuestion");
+                progressDialogFooterQuestion.dismiss();
             }
         }));
 

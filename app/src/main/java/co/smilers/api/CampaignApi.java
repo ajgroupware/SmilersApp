@@ -636,4 +636,63 @@ public class CampaignApi {
             errorListener.onErrorResponse(new VolleyError(ex));
         }
     }
+
+    /**
+     * Lista preguntas finales
+     * Lista las preguntas finales
+     * @param user Usuario asociado a la cuenta   * @param campaign Campaña   * @param title Título   * @param description Descripción   * @param isPublished Pregunta publicada
+     */
+    public void listFooterQuestion (String user, Integer campaign, String title, String description, Boolean isPublished, Context mContext, final Response.Listener<String> responseListener, final Response.ErrorListener errorListener) {
+        Object postBody = null;
+
+        // verify the required parameter 'user' is set
+        if (user == null) {
+            VolleyError error = new VolleyError("Missing the required parameter 'user' when calling listFooterQuestion",
+                    new ApiException(400, "Missing the required parameter 'user' when calling listFooterQuestion"));
+        }
+
+        // create path and map variables
+        String path = "/campaign/footerQuestion".replaceAll("\\{format\\}","json");
+
+        // query params
+        List<Pair> queryParams = new ArrayList<Pair>();
+        // header params
+        Map<String, String> headerParams = new HashMap<String, String>();
+        // form params
+        Map<String, String> formParams = new HashMap<String, String>();
+
+        queryParams.addAll(ApiInvoker.parameterToPairs("", "user", user));
+        queryParams.addAll(ApiInvoker.parameterToPairs("", "campaign", campaign));
+        queryParams.addAll(ApiInvoker.parameterToPairs("", "title", title));
+        queryParams.addAll(ApiInvoker.parameterToPairs("", "description", description));
+        queryParams.addAll(ApiInvoker.parameterToPairs("", "isPublished", isPublished));
+
+
+        String[] contentTypes = {
+
+        };
+        String contentType = contentTypes.length > 0 ? contentTypes[0] : "application/json";
+
+        String[] authNames = new String[] { };
+
+        try {
+            apiInvoker.invokeAPI(basePath, path, "GET", queryParams, postBody, headerParams, formParams, contentType, authNames, mContext,
+                    new Response.Listener<String>() {
+                        @Override
+                        public void onResponse(String localVarResponse) {
+
+                                responseListener.onResponse(localVarResponse);
+
+                        }
+                    }, new Response.ErrorListener() {
+                        @Override
+                        public void onErrorResponse(VolleyError error) {
+                            errorListener.onErrorResponse(error);
+                        }
+                    });
+        } catch (ApiException ex) {
+            errorListener.onErrorResponse(new VolleyError(ex));
+        }
+    }
+
 }

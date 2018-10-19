@@ -24,6 +24,7 @@ import java.util.List;
 import co.smilers.R;
 import co.smilers.StartZoneActivity;
 import co.smilers.model.AnswerScore;
+import co.smilers.model.QuestionItem;
 import co.smilers.model.RequestAssistance;
 import co.smilers.model.SmsCellPhone;
 import co.smilers.model.User;
@@ -165,7 +166,7 @@ public class QuestionFragment extends Fragment {
                         if (StartZoneActivity.showAlert) {
                             showAlertAssistance();
                         } else {
-                            showThanks();
+                            endQuestion();
                         }
                     } else {
                         showNext();
@@ -183,7 +184,7 @@ public class QuestionFragment extends Fragment {
                         if (StartZoneActivity.showAlert) {
                             showAlertAssistance();
                         } else {
-                            showThanks();
+                            endQuestion();
                         }
                     } else {
                         showNext();
@@ -202,7 +203,7 @@ public class QuestionFragment extends Fragment {
                         if (StartZoneActivity.showAlert) {
                             showAlertAssistance();
                         } else {
-                            showThanks();
+                            endQuestion();
                         }
                     } else {
                         showNext();
@@ -230,7 +231,7 @@ public class QuestionFragment extends Fragment {
                         if (StartZoneActivity.showAlert) {
                             showAlertAssistance();
                         } else {
-                            showThanks();
+                            endQuestion();
                         }
                     } else {
                         showNext();
@@ -258,7 +259,7 @@ public class QuestionFragment extends Fragment {
                         if (StartZoneActivity.showAlert) {
                             showAlertAssistance();
                         } else {
-                            showThanks();
+                            endQuestion();
                         }
                     } else {
                         showNext();
@@ -294,6 +295,20 @@ public class QuestionFragment extends Fragment {
 
     public void showThanks() {
         ((StartZoneActivity) getActivity()).navigationController.navigateToThanks(headquarter, zone);
+    }
+
+    public void endQuestion() {
+        //Verificar si hay preguntas de finalización
+        CampaignDAO campaignDAO = new CampaignDAO(getActivity());
+        UserDAO userDAO = new UserDAO(getActivity());
+        User loginUser = userDAO.getUserLogin();
+        List<QuestionItem> questionItems = campaignDAO.getFooterQuestionItem(loginUser.getAccount().getCode());
+        if (questionItems != null && questionItems.size() > 0) {
+            ((StartZoneActivity) getActivity()).navigationController.navigateToFooterQuestion(questionItems.get(0), headquarter, zone);
+        } else {
+            showThanks();
+        }
+
     }
 
     public void showHeader() {
@@ -355,13 +370,13 @@ public class QuestionFragment extends Fragment {
 
                 @Override
                 public void onCancelClick(DialogAssitanceFragment dialogFragment) {
-                    showThanks();
+                    endQuestion();
                 }
             });
             dialogFragment.show(getFragmentManager(), DialogAssitanceFragment.TAG);
         } else {
             sendAlert();
-            showThanks();
+            endQuestion();
         }
 
     }
@@ -387,7 +402,7 @@ public class QuestionFragment extends Fragment {
 
                 try {
                     dialogFragment.closeDialog();
-                    showThanks();
+                    endQuestion();
                 } catch (Exception e) {
                     Log.e(TAG, "--Error: " + e.getMessage());
                 }
