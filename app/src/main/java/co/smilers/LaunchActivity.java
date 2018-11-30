@@ -33,6 +33,7 @@ import co.smilers.model.MeterDevice;
 import co.smilers.model.User;
 import co.smilers.model.data.daos.ParameterDAO;
 import co.smilers.model.data.daos.UserDAO;
+import co.smilers.services.PeriodicalSyncService;
 
 import static android.Manifest.permission.ACCESS_FINE_LOCATION;
 import static android.Manifest.permission.ACCESS_NETWORK_STATE;
@@ -62,6 +63,7 @@ public class LaunchActivity extends AppCompatActivity {
             ParameterDAO parameterDAO = new ParameterDAO(this);
             CurrentConfig currentConfig = parameterDAO.getCurrentConfig(user.getAccount().getCode());
             if (currentConfig != null && currentConfig.getZoneCode() != null && currentConfig.getHeadquarterCode().intValue() > 0) {
+                startService(new Intent(this, PeriodicalSyncService.class));
                 goCurrentConfig(currentConfig.getHeadquarterCode(), currentConfig.getZoneCode());
             } else {
                 goMainScreen();

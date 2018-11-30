@@ -16,8 +16,11 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.TimeZone;
 
 import co.smilers.R;
 import co.smilers.StartZoneActivity;
@@ -191,6 +194,11 @@ public class SelectCampaignFragment extends Fragment implements View.OnClickList
                 Zone zone_ = parameterDAO.getZoneByCode(loginUser.getAccount().getCode(), zone);
                 StartZoneActivity.questionItems = campaignDAO.getQuestionItemByCampaign(loginUser.getAccount().getCode(), list.get(0).getCode());
 
+                //Fecha actual sin Zona horaria
+                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+                String currentDate = dateFormat.format(new Date());
+
                 for (QuestionItem questionItem : StartZoneActivity.questionItems) {
                     if ("CSAT".equals(questionItem.getQuestionType())) {
                         AnswerScore answerScore = new AnswerScore();
@@ -206,6 +214,7 @@ public class SelectCampaignFragment extends Fragment implements View.OnClickList
                         answerScore.setPoor(0);
                         answerScore.setScore(0);
 
+                        answerScore.setRegistrationDate(currentDate);
 
                         StartZoneActivity.answerScores.add(answerScore);
                     } else if ("BOOLEAN".equals(questionItem.getQuestionType())) { // si es pregunta de SI NO
@@ -218,6 +227,8 @@ public class SelectCampaignFragment extends Fragment implements View.OnClickList
                         answerScore.setYesAnswer(0);
                         answerScore.setNoAnswer(0);
                         answerScore.setScore(0);
+
+                        answerScore.setRegistrationDate(currentDate);
 
                         StartZoneActivity.answerBooleanScores.add(answerScore);
                     }

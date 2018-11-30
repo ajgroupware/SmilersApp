@@ -136,7 +136,7 @@ public class StartZoneActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         Log.d(TAG, "--onCreate " );
         setContentView(R.layout.activity_start_zone);
-
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         mVisible = true;
         //mControlsView = findViewById(R.id.fullscreen_content_controls);
         mContentView = findViewById(R.id.fullscreen_content);
@@ -183,7 +183,7 @@ public class StartZoneActivity extends AppCompatActivity {
 
         //Temporalmente
         //Suscribir la aplicación al FCM topic
-        FirebaseMessaging.getInstance().subscribeToTopic("smilersConfig");
+        //FirebaseMessaging.getInstance().subscribeToTopic("smilersConfig");
     }
 
     @Override
