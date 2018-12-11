@@ -135,7 +135,7 @@ public class SelectCampaignFragment extends Fragment implements View.OnClickList
         if ("velez_6".equals(loginUser.getAccount().getCode())) { // Solo para veles
             textviewDescription.setText("¿Cuál de estas secciones quieres evaluar?");
         }
-        List<Campaign> list = campaignDAO.getCampaign(loginUser.getAccount().getCode());
+        List<Campaign> list = campaignDAO.getCampaign(loginUser.getAccount().getCode(), zone);
         //LayoutInflater inflater = LayoutInflater.from(getActivity());
         if (list != null) {
 

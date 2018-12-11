@@ -11,6 +11,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import co.smilers.R;
@@ -32,11 +33,11 @@ public class CampaignFragment extends Fragment {
     private final static String TAG = CampaignFragment.class.getSimpleName();
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
+    public static final String ARG_ZONE = "zone";
     private static final String ARG_PARAM2 = "param2";
 
     // TODO: Rename and change types of parameters
-    private String mParam1;
+    private Long zone;
     private String mParam2;
 
     private RecyclerView.Adapter mAdapter;
@@ -51,15 +52,15 @@ public class CampaignFragment extends Fragment {
      * Use this factory method to create a new instance of
      * this fragment using the provided parameters.
      *
-     * @param param1 Parameter 1.
+     * @param zone Parameter 1.
      * @param param2 Parameter 2.
      * @return A new instance of fragment CampaignFragment.
      */
     // TODO: Rename and change types and number of parameters
-    public static CampaignFragment newInstance(String param1, String param2) {
+    public static CampaignFragment newInstance(Long zone, String param2) {
         CampaignFragment fragment = new CampaignFragment();
         Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
+        args.putLong(ARG_ZONE, zone != null ? zone : 0L);
         args.putString(ARG_PARAM2, param2);
         fragment.setArguments(args);
         return fragment;
@@ -69,7 +70,7 @@ public class CampaignFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
+            zone = getArguments().getLong(ARG_ZONE);
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
     }
@@ -102,7 +103,12 @@ public class CampaignFragment extends Fragment {
         CampaignDAO campaignDAO = new CampaignDAO(getActivity());
         UserDAO userDAO = new UserDAO(getActivity());
         User loginUser = userDAO.getUserLogin();
-        List<Campaign> list = campaignDAO.getCampaign(loginUser.getAccount().getCode());
+        List<Campaign> list = new ArrayList<>();
+        if (zone != null && zone.longValue() > 0) {
+            list = campaignDAO.getCampaign(loginUser.getAccount().getCode(), zone);
+        } else {
+            list = campaignDAO.getCampaign(loginUser.getAccount().getCode());
+        }
 
         staggeredGridLayoutManager = new StaggeredGridLayoutManager(2, 1);
         recyclerView.setLayoutManager(staggeredGridLayoutManager);

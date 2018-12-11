@@ -55,7 +55,7 @@ public class MainActivity extends AppCompatActivity {
                     getSupportFragmentManager().beginTransaction().replace(R.id.fragmentContainer, zoneFragment).commit();
                     return true;
                 case R.id.navigation_campaign:
-                    CampaignFragment campaignFragment = CampaignFragment.newInstance("", "");
+                    CampaignFragment campaignFragment = CampaignFragment.newInstance(null, "");
                     getSupportFragmentManager().beginTransaction().replace(R.id.fragmentContainer, campaignFragment).commit();
                     return true;
             }

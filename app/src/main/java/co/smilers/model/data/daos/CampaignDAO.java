@@ -157,6 +157,77 @@ public class CampaignDAO {
         return  list;
     }
 
+    public List<Campaign> getCampaign(String accountCode, Long zoneCode){
+        Log.i(TAG, "-- start: getCampaign");
+        List<Campaign> list = new ArrayList<>();
+        AppDataHelper mDbHelper = new AppDataHelper(context);
+        SQLiteDatabase db       = null;
+        Cursor cursor           = null;
+        try {
+            db = mDbHelper.getReadableDatabase();
+
+            String[] projection = {
+                    "code"
+                    ,"title"
+                    ,"description"
+                    ,"start_date"
+                    ,"end_date"
+                    ,"is_published"
+                    ,"account_code"
+            };
+
+            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            Date currentDate = new Date();
+            String currentDateStr = simpleDateFormat.format(currentDate);
+            Log.d(TAG, "--currentDateStr: "+currentDateStr);
+            // Define 'where' part of query.
+            //String selection = "account_code = ?";
+            String selection = "account_code = ? and start_date <= '" + currentDateStr + "' and end_date >= '" + currentDateStr + "' and is_published = 1 and code in (select campaign_code from target_zone where zone_code = ? and account_code = ?)"; //Dejar para próxima versión
+            //String selection = "account_code = ? and start_date <= '" + currentDateStr + "' and end_date >= '" + currentDateStr + "'";
+            // Specify arguments in placeholder order.
+            String[] selectionArgs = {accountCode, String.valueOf(zoneCode), accountCode};
+            String sortOrder = null;
+            cursor = db.query(
+                    "campaign",  // The table to query
+                    projection,                       // The columns to return
+                    selection,                        // The columns for the WHERE clause
+                    selectionArgs,                    // The values for the WHERE clause
+                    null,                             // don't group the rows
+                    null,                             // don't filter by row groups
+                    sortOrder                         // The sort order
+            );
+            Campaign object = null;
+            if (cursor != null && cursor.moveToFirst()) {
+                do {
+                    object = new Campaign();
+                    object.setCode(cursor.getLong(cursor.getColumnIndex("code")));
+                    object.setTitle(cursor.getString(cursor.getColumnIndex("title")));
+                    object.setDescription(cursor.getString(cursor.getColumnIndex("description")));
+                    object.setStartDate(cursor.getString(cursor.getColumnIndex("start_date")));
+                    object.setEndDate(cursor.getString(cursor.getColumnIndex("end_date")));
+                    object.setIsPublished("true".equals(cursor.getString(cursor.getColumnIndex("is_published"))) ? true : false );
+
+                    if (!"Satisfacción General  Colina".equals(object.getTitle()) && !"Satisfacción General Poblado".equals(object.getTitle())) { //Ajuste temporal para el éxito
+                        list.add(object);
+                    }
+
+                } while (cursor.moveToNext());
+            }
+
+        } catch (Exception e){
+            Log.e(TAG, "Error: "+e.getMessage());
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+            if (db != null) {
+                db.close();
+            }
+        }
+        Log.i(TAG, "-- end: getCampaign");
+        return  list;
+    }
+
     public Campaign getCampaignByCode(String accountCode, Long code){
         Log.i(TAG, "-- start: getCampaignByCode");
         AppDataHelper mDbHelper = new AppDataHelper(context);
