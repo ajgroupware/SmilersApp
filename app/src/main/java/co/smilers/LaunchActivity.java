@@ -43,7 +43,7 @@ import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
 import static android.Manifest.permission.RECEIVE_BOOT_COMPLETED;
 import static android.Manifest.permission.RECORD_AUDIO;
 import static android.Manifest.permission.REORDER_TASKS;
-import static android.Manifest.permission.SEND_SMS;
+//import static android.Manifest.permission.SEND_SMS;
 
 public class LaunchActivity extends AppCompatActivity {
 
@@ -261,7 +261,8 @@ public class LaunchActivity extends AppCompatActivity {
      * Validar permisos Aplica para android marshmallow
      */
     private void requestPermission(){
-        ActivityCompat.requestPermissions(this,new String[]{RECORD_AUDIO, ACCESS_FINE_LOCATION, REORDER_TASKS, SEND_SMS, RECEIVE_BOOT_COMPLETED, ACCESS_NETWORK_STATE}, PERMISSION_REQUEST_CODE);
+        ActivityCompat.requestPermissions(this,new String[]{RECORD_AUDIO, ACCESS_FINE_LOCATION, REORDER_TASKS, RECEIVE_BOOT_COMPLETED, ACCESS_NETWORK_STATE}, PERMISSION_REQUEST_CODE);
+        //ActivityCompat.requestPermissions(this,new String[]{RECORD_AUDIO, ACCESS_FINE_LOCATION, REORDER_TASKS, SEND_SMS, RECEIVE_BOOT_COMPLETED, ACCESS_NETWORK_STATE}, PERMISSION_REQUEST_CODE);
         //ActivityCompat.requestPermissions(this, new String[]{ACCESS_FINE_LOCATION, READ_EXTERNAL_STORAGE, MEDIA_CONTENT_CONTROL, CAMERA, RECORD_AUDIO, AUDIO_SERVICE}, PERMISSION_REQUEST_CODE);
     }
 

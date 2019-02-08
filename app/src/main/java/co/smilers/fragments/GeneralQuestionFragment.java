@@ -438,7 +438,11 @@ public class GeneralQuestionFragment extends Fragment {
                 Log.e(TAG, "--Error:  " + e.getMessage());
             }
 
-            List<GeneralQuestionItem> generalQuestionItems = campaignDAO.getGeneralQuestionItem(loginUser.getAccount().getCode());
+            List<GeneralQuestionItem> generalQuestionItems = campaignDAO.getGeneralQuestionItem(loginUser.getAccount().getCode(), zone);
+            if (generalQuestionItems == null || generalQuestionItems.size() == 0) {
+                generalQuestionItems = campaignDAO.getGeneralQuestionItem(loginUser.getAccount().getCode());
+            }
+
             if (generalQuestionItems != null && generalQuestionItems.size() > 0) {
                 GeneralQuestionItem generalQuestionItem = generalQuestionItems.get(0);
                 Headquarter headquarter_ = parameterDAO.getHeadquarterByCode(loginUser.getAccount().getCode(), headquarter);

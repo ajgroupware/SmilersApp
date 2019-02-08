@@ -539,6 +539,78 @@ public class CampaignDAO {
         return  object;
     }
 
+    public QuestionItem getQuestionItemByCode(String accountCode, Long codeQuestionItem, Long codeZone){
+        Log.i(TAG, "-- start: getQuestionItemByCode");
+        AppDataHelper mDbHelper = new AppDataHelper(context);
+        SQLiteDatabase db       = null;
+        Cursor cursor           = null;
+        QuestionItem object = new QuestionItem();
+        try {
+            db = mDbHelper.getReadableDatabase();
+
+            String[] projection = {
+                    "code"
+                    ,"title"
+                    ,"description"
+                    ,"design_order"
+                    ,"design_color"
+                    ,"campaign_code"
+                    ,"is_published"
+                    ,"min_score"
+                    ,"receive_comment"
+                    ,"send_sms_notification"
+                    ,"account_code"
+                    ,"question_type"
+                    ,"campaign_code"
+            };
+
+            // Define 'where' part of query.
+            String selection = "account_code = ? and code = ? and campaign_code in (select campaign_code from target_zone where  account_code = ? and zone_code = ?)";
+            // Specify arguments in placeholder order.
+            String[] selectionArgs = {accountCode, String.valueOf(codeQuestionItem), accountCode, String.valueOf(codeZone)};
+            String sortOrder = "design_order";
+            cursor = db.query(
+                    "question_item",  // The table to query
+                    projection,                       // The columns to return
+                    selection,                        // The columns for the WHERE clause
+                    selectionArgs,                    // The values for the WHERE clause
+                    null,                             // don't group the rows
+                    null,                             // don't filter by row groups
+                    sortOrder                         // The sort order
+            );
+
+            if (cursor != null && cursor.moveToFirst()) {
+                do {
+                    object = new QuestionItem();
+                    object.setCode(cursor.getLong(cursor.getColumnIndex("code")));
+                    object.setCampaignCode(cursor.getLong(cursor.getColumnIndex("campaign_code")));
+                    object.setTitle(cursor.getString(cursor.getColumnIndex("title")));
+                    object.setDescription(cursor.getString(cursor.getColumnIndex("description")));
+                    object.setDesignColor(cursor.getString(cursor.getColumnIndex("design_color")));
+                    object.setDesignOrder(cursor.getInt(cursor.getColumnIndex("design_order")));
+                    object.setIsPublished("true".equals(cursor.getString(cursor.getColumnIndex("is_published"))) ? true : false );
+                    object.setReceiveComment("true".equals(cursor.getString(cursor.getColumnIndex("receive_comment"))) ? true : false );
+                    object.setSendSmsNotification("true".equals(cursor.getString(cursor.getColumnIndex("send_sms_notification"))) ? true : false );
+                    object.setMinScore(cursor.getDouble(cursor.getColumnIndex("min_score")));
+                    object.setQuestionType(cursor.getString(cursor.getColumnIndex("question_type")));
+
+                } while (cursor.moveToNext());
+            }
+
+        } catch (Exception e){
+            Log.e(TAG, "Error: "+e.getMessage());
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+            if (db != null) {
+                db.close();
+            }
+        }
+        Log.i(TAG, "-- end: getQuestionItemByCode");
+        return  object;
+    }
+
     public void deleteSmsCellPhone(String account) {
         Log.i(TAG, "-- start: deleteSmsCellPhone");
         SQLiteDatabase db = null;
@@ -741,6 +813,81 @@ public class CampaignDAO {
                     object.setMinScore(cursor.getDouble(cursor.getColumnIndex("min_score")));
 
                     list.add(object);
+                } while (cursor.moveToNext());
+            }
+
+        } catch (Exception e){
+            Log.e(TAG, "Error: "+e.getMessage());
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+            if (db != null) {
+                db.close();
+            }
+        }
+        Log.i(TAG, "-- end: getGeneralQuestionItem");
+        return  list;
+    }
+
+    public List<GeneralQuestionItem> getGeneralQuestionItem(String accountCode, Long zoneCode){
+        Log.i(TAG, "-- start: getGeneralQuestionItem");
+        List<GeneralQuestionItem> list = new ArrayList<>();
+        AppDataHelper mDbHelper = new AppDataHelper(context);
+        SQLiteDatabase db       = null;
+        Cursor cursor           = null;
+        try {
+            db = mDbHelper.getReadableDatabase();
+
+            String[] projection = {
+                    "code"
+                    ,"title"
+                    ,"description"
+                    ,"design_order"
+                    ,"design_color"
+                    ,"is_published"
+                    ,"min_score"
+                    ,"receive_comment"
+                    ,"send_sms_notification"
+                    ,"account_code"
+            };
+
+            // Define 'where' part of query.
+            //String selection = "account_code = ?";
+            String selection = "account_code = ? and is_published = 1";
+            // Specify arguments in placeholder order.
+            String[] selectionArgs = {accountCode};
+            String sortOrder = "design_order";
+            cursor = db.query(
+                    "general_question_item",  // The table to query
+                    projection,                       // The columns to return
+                    selection,                        // The columns for the WHERE clause
+                    selectionArgs,                    // The values for the WHERE clause
+                    null,                             // don't group the rows
+                    null,                             // don't filter by row groups
+                    sortOrder                         // The sort order
+            );
+            GeneralQuestionItem object = null;
+            if (cursor != null && cursor.moveToFirst()) {
+                do {
+                    object = new GeneralQuestionItem();
+                    Long code = cursor.getLong(cursor.getColumnIndex("code"));
+                    QuestionItem questionItem = getQuestionItemByCode(accountCode, code, zoneCode);
+
+                    if (questionItem != null && questionItem.getCode() != null) {
+                        object.setCode(code);
+                        object.setTitle(cursor.getString(cursor.getColumnIndex("title")));
+                        object.setDescription(cursor.getString(cursor.getColumnIndex("description")));
+                        object.setDesignColor(cursor.getString(cursor.getColumnIndex("design_color")));
+                        object.setDesignOrder(cursor.getInt(cursor.getColumnIndex("design_order")));
+                        object.setIsPublished("true".equals(cursor.getString(cursor.getColumnIndex("is_published"))) ? true : false );
+                        object.setReceiveComment("true".equals(cursor.getString(cursor.getColumnIndex("receive_comment"))) ? true : false );
+                        object.setSendSmsNotification("true".equals(cursor.getString(cursor.getColumnIndex("send_sms_notification"))) ? true : false );
+                        object.setMinScore(cursor.getDouble(cursor.getColumnIndex("min_score")));
+
+                        list.add(object);
+                    }
+
                 } while (cursor.moveToNext());
             }
 

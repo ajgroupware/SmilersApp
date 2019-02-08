@@ -17,6 +17,7 @@ public class SmsUtil {
 
     public static void sendSms(final String phoneNo, final String sms, Context context) {
         Log.i(TAG, "-- start: sendSms " + phoneNo);
+        /*
         try {
             new Thread(new Runnable() {
                 @Override
@@ -29,10 +30,11 @@ public class SmsUtil {
                         //Log.i(TAG, "-- outSms " + outSms);
                         //Toast.makeText(context, outSms, Toast.LENGTH_LONG).show();
                         //ArrayList<String> messageList = SmsManager.getDefault().divideMessage(outSms);
-                        /*
-                        ArrayList<String> messageList = new ArrayList<>();
-                        smsList.add(outSms);
-                        */
+
+                        //ArrayList<String> messageList = new ArrayList<>();
+                        //smsList.add(outSms);
+
+
                         //smsManager.sendMultipartTextMessage(phoneNo, null, messageList, null, null);
                         smsManager.sendTextMessage(phoneNo, null, sms, null, null);
 
@@ -52,5 +54,6 @@ public class SmsUtil {
         } catch (Exception e) {
             e.printStackTrace();
         }
+       */
     }
 }

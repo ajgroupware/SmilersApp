@@ -18,7 +18,7 @@
     <uses-permission android:name="android.permission.WRITE_USER_DICTIONARY" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.REORDER_TASKS" />
-    <uses-permission android:name="android.permission.SEND_SMS" />
+    <!--uses-permission android:name="android.permission.SEND_SMS" /-->
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
 
     <!-- We need permission to listen to boot_completed -->

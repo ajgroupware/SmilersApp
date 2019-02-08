@@ -22,6 +22,7 @@ import java.io.OutputStream;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -781,6 +782,11 @@ public class SyncIntentService extends IntentService {
      */
     private void handleActionSyncAnswer(String account, final Boolean isSyncSaved, final ResultReceiver receiver) {
         final CampaignApi campaignApi = new CampaignApi();
+        try {
+            clearAnswer();
+        }catch (Exception e) {
+            Log.e(TAG, "-- Error: " + e.getMessage());
+        }
         campaignApi.addAnswerScore(account, isSyncSaved ? StartZoneActivity.savedAnswerScores : StartZoneActivity.answerScores  , getApplicationContext(), new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {
@@ -1342,5 +1348,26 @@ public class SyncIntentService extends IntentService {
                         receiver.send(0, responseBundle);
                     }
                 });
+    }
+
+    //Por alguna razón se generando respuestas vacías, se limpian las respuestas antes de enviar
+    private void clearAnswer() {
+        if (StartZoneActivity.answerScores != null) {
+            for (Iterator<AnswerScore> i = StartZoneActivity.answerScores.iterator(); i.hasNext(); ) {
+                AnswerScore answerScore  = i.next();
+                if (answerScore.getScore() == null || answerScore.getScore().intValue() == 0) {
+                    i.remove();
+                }
+            }
+        }
+
+        if (StartZoneActivity.savedAnswerScores != null) {
+            for (Iterator<AnswerScore> i = StartZoneActivity.savedAnswerScores.iterator(); i.hasNext(); ) {
+                AnswerScore answerScore  = i.next();
+                if (answerScore.getScore() == null || answerScore.getScore().intValue() == 0) {
+                    i.remove();
+                }
+            }
+        }
     }
 }
